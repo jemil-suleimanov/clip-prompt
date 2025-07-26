@@ -19,11 +19,11 @@ async function init() {
     // Test Ollama connection
     await testOllamaConnection();
     
-    // Load available models
+    // Load available models and set initial model
     await loadAvailableModels();
 
-    // Check autostart status on startup
-    await checkAutostartStatus();
+    // Load platform-specific autostart instructions
+    await loadPlatformInstructions();
     
     console.log('✅ Clip Prompt initialized successfully');
 }
@@ -36,14 +36,10 @@ function setupEventListeners() {
     document.getElementById('enhanceBtn').addEventListener('click', handleEnhance);
     document.getElementById('clearBtn').addEventListener('click', handleClear);
     document.getElementById('copyBtn').addEventListener('click', handleCopy);
-    document.getElementById('quitBtn').addEventListener('click', () => {
-        // Hide window instead of quitting (let system tray handle it)
-        window.close();
-    });
+    document.getElementById('hideToTrayBtn').addEventListener('click', handleHideToTray);
     
     // Settings event listeners
-    document.getElementById('modelSelect').addEventListener('change', saveSettings);
-    document.getElementById('autostartToggle').addEventListener('change', handleAutostartToggle);
+    document.getElementById('modelSelect').addEventListener('change', handleModelChange);
     
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
@@ -63,6 +59,50 @@ function setupEventListeners() {
 }
 
 /**
+ * Handle hide to tray action
+ */
+async function handleHideToTray() {
+    try {
+        console.log('🔄 Hiding window to tray...');
+        // Use Tauri's window API to hide the window
+        const { getCurrent } = window.__TAURI__.window;
+        const currentWindow = getCurrent();
+        await currentWindow.hide();
+        console.log('✅ Window hidden to tray');
+    } catch (error) {
+        console.error('❌ Failed to hide window:', error);
+    }
+}
+
+/**
+ * Handle model change
+ */
+async function handleModelChange() {
+    const modelSelect = document.getElementById('modelSelect');
+    const selectedModel = modelSelect.value;
+    
+    try {
+        console.log('🔄 Changing model to:', selectedModel);
+        updateModelStatus('connecting', `Switching to ${selectedModel}...`);
+        
+        // Save the setting
+        localStorage.setItem('selectedModel', selectedModel);
+        
+        // Update the model in the backend
+        await invoke('update_model', { model: selectedModel });
+        
+        // Test the new model with a simple request
+        await invoke('test_ollama_connection');
+        
+        updateModelStatus('connected', selectedModel);
+        console.log('✅ Model changed successfully');
+    } catch (error) {
+        console.error('❌ Model change failed:', error);
+        updateModelStatus('error', `Failed to switch to ${selectedModel}`);
+    }
+}
+
+/**
  * Handle text enhancement
  */
 async function handleEnhance() {
@@ -71,9 +111,16 @@ async function handleEnhance() {
     const inputText = document.getElementById('inputText').value.trim();
     const outputTextarea = document.getElementById('outputText');
     const enhanceBtn = document.getElementById('enhanceBtn');
+    const modelSelect = document.getElementById('modelSelect');
     
     if (!inputText) {
-        updateStatus('error', 'Please enter some text to enhance');
+        updateOllamaStatus('error', 'Please enter some text to enhance');
+        return;
+    }
+    
+    // Check if a valid model is selected
+    if (!modelSelect.value || modelSelect.value === 'No models available' || modelSelect.value === 'Failed to load models') {
+        updateOllamaStatus('error', 'No AI model available. Please check your Ollama installation.');
         return;
     }
     
@@ -82,20 +129,27 @@ async function handleEnhance() {
     enhanceBtn.disabled = true;
     outputTextarea.value = 'Processing...';
     
-    updateStatus('connecting', 'Enhancing text...');
+    updateOllamaStatus('connecting', 'Enhancing text...');
     
     try {
         console.log('🤖 Enhancing text:', inputText);
-        const enhanced = await invoke('enhance_prompt', { prompt: inputText });
+        
+        // Get the currently selected model
+        const selectedModel = modelSelect.value;
+        
+        const enhanced = await invoke('enhance_prompt', { 
+            prompt: inputText,
+            model: selectedModel
+        });
         
         outputTextarea.value = enhanced;
-        updateStatus('connected', 'Text enhanced successfully');
+        updateOllamaStatus('connected', 'Text enhanced successfully');
         
         console.log('✅ Enhancement complete');
     } catch (error) {
         console.error('❌ Enhancement failed:', error);
         outputTextarea.value = '';
-        updateStatus('error', `Enhancement failed: ${error}`);
+        updateOllamaStatus('error', `Enhancement failed: ${error}`);
     } finally {
         isEnhancing = false;
         enhanceBtn.textContent = 'Enhance';
@@ -109,7 +163,7 @@ async function handleEnhance() {
 function handleClear() {
     document.getElementById('inputText').value = '';
     document.getElementById('outputText').value = '';
-    updateStatus('connected', 'Ready');
+    updateOllamaStatus('connected', 'Connected to Ollama');
     console.log('🧹 Text fields cleared');
 }
 
@@ -120,64 +174,55 @@ async function handleCopy() {
     const outputText = document.getElementById('outputText').value;
     
     if (!outputText || outputText === 'Processing...') {
-        updateStatus('error', 'No enhanced text to copy');
+        updateOllamaStatus('error', 'No enhanced text to copy');
         return;
     }
     
     try {
         await navigator.clipboard.writeText(outputText);
-        updateStatus('connected', 'Text copied to clipboard');
+        updateOllamaStatus('connected', 'Text copied to clipboard');
         console.log('📋 Text copied to clipboard');
     } catch (error) {
         console.error('❌ Copy failed:', error);
-        updateStatus('error', 'Failed to copy text');
+        updateOllamaStatus('error', 'Failed to copy text');
     }
 }
 
 /**
- * Handle autostart toggle
+ * Load platform-specific autostart instructions
  */
-async function handleAutostartToggle() {
-    const toggle = document.getElementById('autostartToggle');
-    const isEnabled = toggle.checked;
-    
+async function loadPlatformInstructions() {
     try {
-        console.log('🔄 Setting autostart:', isEnabled ? 'enabled' : 'disabled');
+        console.log('🔄 Loading platform instructions...');
+        const platform = await invoke('get_platform');
         
-        if (isEnabled) {
-            await invoke('enable_autostart');
-            updateStatus('connected', 'Autostart enabled');
-        } else {
-            await invoke('disable_autostart');
-            updateStatus('connected', 'Autostart disabled');
+        // Hide all instruction divs first
+        document.getElementById('macosInstructions').classList.add('hidden');
+        document.getElementById('windowsInstructions').classList.add('hidden');
+        document.getElementById('linuxInstructions').classList.add('hidden');
+        
+        // Show the appropriate instructions based on platform
+        switch (platform) {
+            case 'macos':
+                document.getElementById('macosInstructions').classList.remove('hidden');
+                updateAutostartStatus('connected', 'macOS detected');
+                break;
+            case 'windows':
+                document.getElementById('windowsInstructions').classList.remove('hidden');
+                updateAutostartStatus('connected', 'Windows detected');
+                break;
+            case 'linux':
+                document.getElementById('linuxInstructions').classList.remove('hidden');
+                updateAutostartStatus('connected', 'Linux detected');
+                break;
+            default:
+                updateAutostartStatus('error', 'Unknown platform');
         }
         
-        // Save setting
-        localStorage.setItem('autostart', isEnabled.toString());
-        
-        console.log('✅ Autostart', isEnabled ? 'enabled' : 'disabled');
+        console.log('✅ Platform instructions loaded for:', platform);
     } catch (error) {
-        console.error('❌ Autostart toggle failed:', error);
-        toggle.checked = !isEnabled; // Revert on error
-        updateStatus('error', `Failed to ${isEnabled ? 'enable' : 'disable'} autostart: ${error}`);
-    }
-}
-
-/**
- * Check autostart status on startup
- */
-async function checkAutostartStatus() {
-    try {
-        const isEnabled = await invoke('is_autostart_enabled');
-        const toggle = document.getElementById('autostartToggle');
-        toggle.checked = isEnabled;
-        
-        // Update localStorage to match actual system state
-        localStorage.setItem('autostart', isEnabled.toString());
-        
-        console.log('📋 Autostart status:', isEnabled ? 'enabled' : 'disabled');
-    } catch (error) {
-        console.error('❌ Failed to check autostart status:', error);
+        console.error('❌ Failed to load platform instructions:', error);
+        updateAutostartStatus('error', 'Failed to detect platform');
     }
 }
 
@@ -186,16 +231,16 @@ async function checkAutostartStatus() {
  */
 async function testOllamaConnection() {
     console.log('🔍 Testing Ollama connection...');
-    updateStatus('connecting', 'Testing connection...');
+    updateOllamaStatus('connecting', 'Testing connection...');
     
     try {
         await invoke('test_ollama_connection');
-        updateStatus('connected', 'Connected to Ollama');
+        updateOllamaStatus('connected', 'Connected to Ollama');
         console.log('✅ Ollama connection successful');
         return true;
     } catch (error) {
         console.error('❌ Ollama connection failed:', error);
-        updateStatus('error', `Connection failed: ${error}`);
+        updateOllamaStatus('error', `Connection failed: ${error}`);
         return false;
     }
 }
@@ -206,12 +251,35 @@ async function testOllamaConnection() {
 async function loadAvailableModels() {
     try {
         console.log('📋 Loading available models...');
+        updateModelStatus('connecting', 'Loading models...');
+        
         const models = await invoke('get_available_models');
         
         const modelSelect = document.getElementById('modelSelect');
         
         // Clear existing options
         modelSelect.innerHTML = '';
+        
+        if (models.length === 0) {
+            // No models available
+            updateModelStatus('error', 'No models available');
+            console.log('❌ No models available');
+            
+            // Show warning message
+            document.getElementById('modelWarning').classList.remove('hidden');
+            
+            // Add a placeholder option
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No models available';
+            option.disabled = true;
+            modelSelect.appendChild(option);
+            
+            return;
+        }
+        
+        // Hide warning message if models are available
+        document.getElementById('modelWarning').classList.add('hidden');
         
         // Add models to dropdown (models is an array of strings)
         models.forEach(modelName => {
@@ -221,25 +289,50 @@ async function loadAvailableModels() {
             modelSelect.appendChild(option);
         });
         
-        // Restore saved selection
+        // Restore saved selection or use first available model
         const savedModel = localStorage.getItem('selectedModel');
-        if (savedModel) {
-            modelSelect.value = savedModel;
+        let selectedModel;
+        
+        if (savedModel && models.includes(savedModel)) {
+            // Use saved model if it's still available
+            selectedModel = savedModel;
+        } else {
+            // Use first available model
+            selectedModel = models[0];
+            localStorage.setItem('selectedModel', selectedModel);
         }
         
-        console.log(`✅ Loaded ${models.length} models`);
+        modelSelect.value = selectedModel;
+        updateModelStatus('connected', selectedModel);
+        
+        // Set the initial model in the backend
+        await invoke('set_initial_model');
+        
+        console.log(`✅ Loaded ${models.length} models, using: ${selectedModel}`);
     } catch (error) {
         console.error('❌ Failed to load models:', error);
-        // Keep default options if loading fails
+        updateModelStatus('error', 'Failed to load models');
+        
+        // Add error placeholder
+        const modelSelect = document.getElementById('modelSelect');
+        modelSelect.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Failed to load models';
+        option.disabled = true;
+        modelSelect.appendChild(option);
+        
+        // Show warning message
+        document.getElementById('modelWarning').classList.remove('hidden');
     }
 }
 
 /**
- * Update status indicator
+ * Update Ollama connection status
  */
-function updateStatus(status, message) {
-    const statusDot = document.getElementById('statusDot');
-    const statusText = document.getElementById('statusText');
+function updateOllamaStatus(status, message) {
+    const statusDot = document.getElementById('ollamaStatusDot');
+    const statusText = document.getElementById('ollamaStatusText');
     
     // Remove existing status classes
     statusDot.className = 'status-dot';
@@ -249,22 +342,90 @@ function updateStatus(status, message) {
         case 'connected':
             statusDot.classList.add('status-connected');
             statusText.textContent = message || 'Connected';
-            statusText.className = 'text-green-400';
+            statusText.className = 'text-sm text-green-400';
             break;
         case 'connecting':
             statusDot.classList.add('status-connecting');
             statusText.textContent = message || 'Connecting...';
-            statusText.className = 'text-yellow-400';
+            statusText.className = 'text-sm text-yellow-400';
             break;
         case 'error':
             statusDot.classList.add('status-disconnected');
             statusText.textContent = message || 'Disconnected';
-            statusText.className = 'text-red-400';
+            statusText.className = 'text-sm text-red-400';
             break;
         default:
             statusDot.classList.add('status-connecting');
             statusText.textContent = message || 'Unknown status';
-            statusText.className = 'text-gray-400';
+            statusText.className = 'text-sm text-gray-400';
+    }
+}
+
+/**
+ * Update autostart status
+ */
+function updateAutostartStatus(status, message) {
+    const statusDot = document.getElementById('autostartStatusDot');
+    const statusText = document.getElementById('autostartStatusText');
+    
+    // Remove existing status classes
+    statusDot.className = 'status-dot';
+    
+    // Add new status class and update text
+    switch (status) {
+        case 'connected':
+            statusDot.classList.add('status-connected');
+            statusText.textContent = message || 'Enabled';
+            statusText.className = 'text-sm text-green-400';
+            break;
+        case 'connecting':
+            statusDot.classList.add('status-connecting');
+            statusText.textContent = message || 'Configuring...';
+            statusText.className = 'text-sm text-yellow-400';
+            break;
+        case 'error':
+            statusDot.classList.add('status-disconnected');
+            statusText.textContent = message || 'Error';
+            statusText.className = 'text-sm text-red-400';
+            break;
+        default:
+            statusDot.classList.add('status-neutral');
+            statusText.textContent = message || 'Disabled';
+            statusText.className = 'text-sm text-[var(--text-secondary)]';
+    }
+}
+
+/**
+ * Update model status
+ */
+function updateModelStatus(status, message) {
+    const statusDot = document.getElementById('modelStatusDot');
+    const statusText = document.getElementById('modelStatusText');
+    
+    // Remove existing status classes
+    statusDot.className = 'status-dot';
+    
+    // Add new status class and update text
+    switch (status) {
+        case 'connected':
+            statusDot.classList.add('status-connected');
+            statusText.textContent = message || 'Model loaded';
+            statusText.className = 'text-sm text-green-400';
+            break;
+        case 'connecting':
+            statusDot.classList.add('status-connecting');
+            statusText.textContent = message || 'Loading...';
+            statusText.className = 'text-sm text-yellow-400';
+            break;
+        case 'error':
+            statusDot.classList.add('status-disconnected');
+            statusText.textContent = message || 'Error';
+            statusText.className = 'text-sm text-red-400';
+            break;
+        default:
+            statusDot.classList.add('status-neutral');
+            statusText.textContent = message || 'No model';
+            statusText.className = 'text-sm text-[var(--text-secondary)]';
     }
 }
 
@@ -280,6 +441,9 @@ async function loadSettings() {
         if (savedModel) {
             const modelSelect = document.getElementById('modelSelect');
             modelSelect.value = savedModel;
+            
+            // Update the backend model to match the saved setting
+            await invoke('update_model', { model: savedModel });
         }
         
         // Note: Autostart status is checked from system on startup
@@ -302,15 +466,11 @@ function saveSettings() {
         const modelSelect = document.getElementById('modelSelect');
         localStorage.setItem('selectedModel', modelSelect.value);
         
-        // Save autostart setting
-        const autostartToggle = document.getElementById('autostartToggle');
-        localStorage.setItem('autostart', autostartToggle.checked.toString());
-        
         console.log('✅ Settings saved');
-        updateStatus('connected', 'Settings saved');
+        updateOllamaStatus('connected', 'Settings saved');
     } catch (error) {
         console.error('❌ Failed to save settings:', error);
-        updateStatus('error', 'Failed to save settings');
+        updateOllamaStatus('error', 'Failed to save settings');
     }
 }
 

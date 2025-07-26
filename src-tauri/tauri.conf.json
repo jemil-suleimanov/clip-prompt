@@ -16,15 +16,11 @@
         "resizable": true,
         "minWidth": 600,
         "minHeight": 500,
-        "visible": false
+        "visible": false,
+        "skipTaskbar": true
       }
     ],
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true,
-      "menuOnLeftClick": false,
-      "title": "Clip Prompt"
-    },
+
     "security": {
       "csp": null
     }

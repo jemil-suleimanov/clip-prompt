@@ -1,10 +1,11 @@
 use tauri::Manager;
 use tauri_plugin_notification::NotificationExt;
-use tauri::{menu::{Menu, MenuItem}, tray::{MouseButton, TrayIconBuilder, TrayIconEvent}, WindowEvent};
+use tauri::{menu::{Menu, MenuItem}, tray::TrayIconBuilder, WindowEvent};
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use std::path::PathBuf;
 use std::fs;
+use std::sync::Mutex;
 use reqwest;
 use anyhow::Result;
 use log::{info, error, debug};
@@ -35,79 +36,105 @@ struct OllamaRequest {
 
 struct AppState {
     ollama_url: String,
-    model_name: String,
+    model_name: Mutex<String>,
 }
 
 impl Default for AppState {
     fn default() -> Self {
         Self {
             ollama_url: "http://localhost:11434".to_string(),
-            model_name: "mistral:7b".to_string(), // Changed to an available model
+            model_name: Mutex::new("".to_string()), // Will be set dynamically
         }
     }
 }
 
 #[tauri::command]
-async fn enhance_prompt(prompt: String, state: tauri::State<'_, AppState>) -> Result<String, String> {
+async fn enhance_prompt(prompt: String, model: Option<String>, state: tauri::State<'_, AppState>) -> Result<String, String> {
     debug!("Enhance prompt called with: {}", prompt);
     
     let system_prompt = r#"<system_prompt>
-YOU ARE A LOCAL PROMPT ENHANCER RUNNING ENTIRELY ON THE USER'S MACHINE.  
-YOUR EXCLUSIVE MISSION IS TO READ THE USER'S RAW INPUT PROMPT AND REWRITE IT INTO A FAR MORE DETAILED, SPECIFIC, AND HIGH‑QUALITY PROMPT THAT ANOTHER AI ASSISTANT COULD DIRECTLY USE TO PRODUCE THE BEST POSSIBLE OUTPUT.
+YOU ARE A LOCAL PROMPT ENHANCER RUNNING ENTIRELY ON THE USER’S MACHINE.
+
+YOUR EXCLUSIVE MISSION IS TO READ THE USER’S RAW INPUT PROMPT AND REWRITE IT INTO A MORE DETAILED, CLEAR, AND WELL‑STRUCTURED PROMPT THAT ANOTHER AI ASSISTANT COULD DIRECTLY USE TO PRODUCE THE BEST POSSIBLE OUTPUT.
+
+### CORE BEHAVIORS ###
+- DETECT THE LANGUAGE OF THE INPUT AND OUTPUT IN THE SAME LANGUAGE.
+- ANALYZE THE COMPLEXITY OF THE USER’S INPUT:
+  • IF THE INPUT IS VERY SIMPLE OR SHORT (E.G., “CARBONARA RECIPE”), ENHANCE ONLY SLIGHTLY — KEEP THE OUTPUT BRIEF, CLEAR, AND STILL SIMPLE.
+  • IF THE INPUT IS MODERATELY DETAILED, EXPAND IT WITH ADDITIONAL CONTEXT AND PARAMETERS.
+  • IF THE INPUT IS COMPLEX OR AMBIGUOUS, ADD RICH DETAILS, RELEVANT CONSTRAINTS, AND CLARIFY THE INTENT AS MUCH AS POSSIBLE.
+- ALWAYS PRESERVE THE ORIGINAL INTENT AND MEANING.
+- OUTPUT ONLY THE ENHANCED PROMPT — NOTHING ELSE.
 
 ### INSTRUCTIONS ###
-- YOU MUST FULLY PRESERVE THE ORIGINAL INTENT AND MEANING WHILE EXPANDING IT WITH HELPFUL CLARITY AND ADDITIONAL CONTEXT.
-- YOU MUST MAKE THE PROMPT MORE EXPLICIT, MORE ACTION‑ORIENTED, AND MORE PROFESSIONAL.
-- YOU MUST OUTPUT **ONLY** THE ENHANCED PROMPT — NOTHING ELSE.  
-- YOU MUST NEVER EXPLAIN, APOLOGIZE, OR ADD META COMMENTS.
-- WHEN THE USER'S INPUT IS VAGUE, YOU MUST INFER AND ADD REASONABLE DETAILS AND PARAMETERS TO MAKE THE PROMPT STRONGER.
-- IF NEEDED, ADD DOMAIN‑RELEVANT CONSTRAINTS, OBJECTIVES, OR EDGE‑CASE CONSIDERATIONS THAT WOULD HELP ANOTHER AI TO PERFORM BETTER.
-- ALWAYS RETURN A SINGLE COMPLETE REWRITTEN PROMPT, READY FOR DIRECT USE.
+- NEVER ANSWER THE PROMPT OR GIVE TIPS.
+- NEVER ADD EXPLANATIONS, NOTES, OR COMMENTS.
+- ALWAYS PRODUCE ONE SINGLE PROMPT, NO BULLET LISTS OR MULTIPLE VERSIONS.
+- IF THE ORIGINAL IS VAGUE, INFER AND ADD REASONABLE CONTEXT.
+- IF THE ORIGINAL IS ALREADY DETAILED, IMPROVE STRUCTURE AND ADD MORE ACTIONABLE PARAMETERS.
+- AVOID OVERCOMPLICATING WHEN THE INPUT IS OBVIOUSLY SIMPLE AND SELF‑CONTAINED.
 
 ### CHAIN OF THOUGHTS ###
-FOLLOW THESE STEPS INTERNALLY BEFORE YOU PRODUCE THE OUTPUT:
-1. **UNDERSTAND**: READ the raw input and IDENTIFY the user's goal or intent.
-2. **BASICS**: EXTRACT the core subject, task, and domain.
-3. **BREAK DOWN**: SPLIT the user's intent into sub‑tasks or dimensions that can be clarified or expanded.
-4. **ANALYZE**: CONSIDER what details, constraints, parameters, or examples would make the prompt richer and more actionable.
-5. **BUILD**: REWRITE the input prompt into a single, clear, detailed instruction that includes these improvements.
-6. **EDGE CASES**: THINK of special conditions or clarifications that might help prevent ambiguous interpretation, and include them when relevant.
-7. **FINAL ANSWER**: OUTPUT ONLY the enhanced prompt — no explanations, no prefixes, no suffixes.
+FOLLOW THESE STEPS INTERNALLY BEFORE PRODUCING OUTPUT:
+1. **UNDERSTAND**: READ the raw input and DETECT language and intent.
+2. **BASICS**: IDENTIFY subject, domain, and goal.
+3. **BREAK DOWN**: SPLIT the intent into sub‑tasks or aspects.
+4. **ANALYZE**: DETERMINE what extra details would meaningfully improve the prompt.
+5. **ADJUST COMPLEXITY**: MATCH output detail level to input complexity.
+6. **EDGE CASES**: CHECK for ambiguous or overly broad inputs and clarify carefully.
+7. **FINAL ANSWER**: OUTPUT ONLY the rewritten prompt in the same language.
 
 ### WHAT NOT TO DO ###
-- DO NOT ANSWER THE USER'S ORIGINAL PROMPT.
-- DO NOT DESCRIBE WHAT YOU ARE DOING OR HOW YOU IMPROVED IT.
-- DO NOT SAY "THE USER WANTS…" OR "HERE IS YOUR IMPROVED PROMPT…"
-- DO NOT OUTPUT MULTIPLE VERSIONS OR BULLET LISTS — ONLY ONE FINAL PROMPT.
-- DO NOT LEAVE THE PROMPT GENERIC — ALWAYS ADD CLARITY, CONTEXT, AND DETAIL.
-- NEVER USE PHRASES LIKE "AS AN AI…" OR "I THINK…"
-- NEVER OMIT KEY DETAILS FROM THE USER'S INTENT.
-- NEVER ADD IRRELEVANT INFORMATION.
+- DO NOT ANSWER THE USER’S ORIGINAL PROMPT.
+- DO NOT OUTPUT IN A DIFFERENT LANGUAGE THAN THE INPUT.
+- DO NOT SAY “THE USER WANTS…” OR “HERE IS YOUR PROMPT…”.
+- DO NOT OUTPUT MULTIPLE PROMPTS OR EXPLANATIONS.
+- DO NOT OVEREXPAND A SIMPLE PROMPT INTO AN UNRELATED OR EXCESSIVE TASK.
+- DO NOT OMIT KEY DETAILS FROM THE USER’S INTENT.
+- DO NOT ADD IRRELEVANT CONTEXT.
 
 ### FEW‑SHOT EXAMPLES ###
 
-**Example 1**
-Input: `I want to improve A`
-Output: `I want to improve A by integrating B and optimizing C parameters, while also considering D and E to ensure scalability and accuracy.`
+**Example 1 (simple)**
+Input: `carbonara recipe`  
+Output: `Provide a simple, authentic carbonara recipe with a short list of key ingredients and clear step-by-step instructions.`
 
-**Example 2**
-Input: `help me write better marketing copy`
-Output: `Write a compelling, high‑conversion marketing copy that highlights product benefits, appeals to target audience pain points, uses persuasive language, and includes clear calls‑to‑action.`
+**Example 2 (moderate)**
+Input: `improve my resume`  
+Output: `Revise and enhance my resume by highlighting my key achievements, quantifying results wherever possible, improving clarity and impact, and ensuring it is tailored to the target industry.`
 
-**Example 3**
-Input: `make this code better`
-Output: `Refactor the following code to improve readability, optimize performance, ensure consistent naming conventions, and handle potential edge cases or errors gracefully.`
+**Example 3 (complex)**
+Input: `how to improve A`  
+Output: `Explain how to improve A by integrating B and optimizing C parameters, while also considering D and F to ensure scalability, accuracy, and long-term maintainability.`
 
-**Example 4**
-Input: `design me a logo`
-Output: `Design a modern, minimalistic logo that reflects innovation and trust, uses a blue and white color palette, and is optimized for both digital and print formats.`
+**Example 4 (non‑English)**
+Input: `Consejos para cultivar tomates`  
+Output: `Proporciona consejos detallados y prácticos para cultivar tomates, incluyendo condiciones de suelo, riego, fertilización, control de plagas y cuidados estacionales.`
 
 </system_prompt>"#;
 
     let full_prompt = format!("{}\n\nUser input: {}\n\nEnhanced prompt:", system_prompt, prompt);
 
+    let model_to_use = model.unwrap_or_else(|| {
+        let current_model = state.model_name.lock().unwrap().clone();
+        if current_model.is_empty() {
+            // If no model is set, try to get the first available model
+            // This is a fallback for when the app starts without a model set
+            match std::panic::catch_unwind(|| {
+                // This is a bit of a hack, but we need to handle this case
+                // In a real app, you'd want to handle this more gracefully
+                "mistral:7b".to_string() // Fallback model
+            }) {
+                Ok(fallback_model) => fallback_model,
+                Err(_) => "mistral:7b".to_string() // Ultimate fallback
+            }
+        } else {
+            current_model
+        }
+    });
+    
     let request = OllamaRequest {
-        model: state.model_name.clone(),
+        model: model_to_use,
         prompt: full_prompt,
         stream: false,
     };
@@ -236,6 +263,65 @@ async fn is_autostart_enabled() -> Result<bool, String> {
         "windows" => is_autostart_enabled_windows(),
         "linux" => is_autostart_enabled_linux(),
         _ => Err("Unsupported operating system".to_string()),
+    }
+}
+
+#[tauri::command]
+async fn get_platform() -> Result<String, String> {
+    Ok(std::env::consts::OS.to_string())
+}
+
+#[tauri::command]
+async fn update_model(model: String, state: tauri::State<'_, AppState>) -> Result<(), String> {
+    debug!("Updating model to: {}", model);
+    
+    // Update the model in the app state
+    match state.model_name.lock() {
+        Ok(mut model_name) => {
+            *model_name = model.clone();
+            debug!("Model updated successfully to: {}", model);
+            Ok(())
+        },
+        Err(e) => {
+            error!("Failed to lock model_name mutex: {}", e);
+            Err("Failed to update model".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+async fn set_initial_model(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    debug!("Setting initial model...");
+    
+    // Get available models
+    let models = match get_available_models(state.clone()).await {
+        Ok(models) => models,
+        Err(e) => {
+            error!("Failed to get available models: {}", e);
+            return Err("Failed to get available models".to_string());
+        }
+    };
+    
+    if models.is_empty() {
+        error!("No models available");
+        return Err("No models available".to_string());
+    }
+    
+    // Use the first available model
+    let first_model = models[0].clone();
+    debug!("Setting initial model to: {}", first_model);
+    
+    // Update the model in the app state
+    match state.model_name.lock() {
+        Ok(mut model_name) => {
+            *model_name = first_model.clone();
+            debug!("Initial model set successfully to: {}", first_model);
+            Ok(first_model)
+        },
+        Err(e) => {
+            error!("Failed to lock model_name mutex: {}", e);
+            Err("Failed to set initial model".to_string())
+        }
     }
 }
 
@@ -514,9 +600,9 @@ pub fn run() {
         )
         .manage(AppState {
             ollama_url: "http://localhost:11434".to_string(),
-            model_name: "mistral:7b".to_string(),
+            model_name: Mutex::new("".to_string()), // Will be set dynamically
         })
-        .invoke_handler(tauri::generate_handler![enhance_prompt, test_ollama_connection, get_available_models, enable_autostart, disable_autostart, is_autostart_enabled])
+        .invoke_handler(tauri::generate_handler![enhance_prompt, test_ollama_connection, get_available_models, enable_autostart, disable_autostart, is_autostart_enabled, get_platform, update_model, set_initial_model])
         .setup(|app| {
             println!("🚀 Setting up Clip Prompt...");
             info!("Clip Prompt started successfully");
@@ -531,22 +617,9 @@ pub fn run() {
             let _ = TrayIconBuilder::with_id("main")
                 .menu(&menu)
                 .icon(app.default_window_icon().unwrap().clone())
-                .title("Clip Prompt")
                 .tooltip("Clip Prompt - AI Text Enhancer")
-                .on_tray_icon_event(|tray, event| {
-                    match event {
-                        TrayIconEvent::Click {
-                            button: MouseButton::Left,
-                            ..
-                        } => {
-                            let app = tray.app_handle();
-                            if let Some(window) = app.get_webview_window("main") {
-                                let _ = window.show();
-                                let _ = window.set_focus();
-                            }
-                        }
-                        _ => {}
-                    }
+                .on_tray_icon_event(|_tray, _event| {
+                    // Left-click on tray icon does nothing - only show window via menu
                 })
                 .on_menu_event(|app, event| {
                     match event.id.as_ref() {
@@ -618,7 +691,7 @@ async fn handle_global_hotkey(app_handle: tauri::AppHandle) -> Result<(), Box<dy
             let _ = app_handle.notification()
                 .builder()
                 .title("Clip Prompt")
-                .body("📋 Please select text and press Cmd+C first, then try again")
+                .body("📋 Please copy some text first (Cmd+C), then try again")
                 .show();
             
             return Err(format!("Failed to read clipboard: {}", e).into());
@@ -627,27 +700,43 @@ async fn handle_global_hotkey(app_handle: tauri::AppHandle) -> Result<(), Box<dy
 
     // Skip if clipboard is empty or too short
     if clipboard_text.trim().is_empty() {
-        println!("⚠️  Clipboard is empty - please select some text first");
+        println!("⚠️  Clipboard is empty - please copy some text first");
         info!("Clipboard content is empty or whitespace only");
         
         // Show "empty clipboard" notification with helpful instructions
         let _ = app_handle.notification()
             .builder()
             .title("Clip Prompt")
-            .body("📋 Please select some text and press Cmd+C first")
+            .body("📋 Please copy some text first (Cmd+C), then try again")
             .show();
         
         return Ok(());
     }
 
-    println!("🤖 Enhancing with AI...");
+    println!("🤖 Enhancing clipboard text...");
     info!("Enhancing clipboard text...");
     
     // Get app state
     let state = app_handle.state::<AppState>();
     
-    // Enhance the prompt
-    match enhance_prompt(clipboard_text, state).await {
+    // Check if we have a model set
+    let current_model = state.model_name.lock().unwrap().clone();
+    if current_model.is_empty() {
+        println!("❌ No model available for enhancement");
+        info!("No model available for enhancement");
+        
+        // Show error notification
+        let _ = app_handle.notification()
+            .builder()
+            .title("Clip Prompt")
+            .body("❌ No AI model available. Please check your Ollama installation.")
+            .show();
+        
+        return Ok(());
+    }
+    
+    // Enhance the prompt (use current model for global hotkey)
+    match enhance_prompt(clipboard_text, Some(current_model), state).await {
         Ok(enhanced_text) => {
             println!("✨ Enhanced! Writing {} chars to clipboard...", enhanced_text.len());
             info!("Text enhanced successfully, writing back to clipboard...");
