@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clip Prompt</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Clip Prompt</h1>
+            <p class="subtitle">Local Prompt Enhancer</p>
+        </header>
+
+        <div class="status-section">
+            <div class="status-indicator" id="status-indicator">
+                <span class="status-dot ready"></span>
+                <span class="status-text">Ready</span>
+            </div>
+            <div class="hotkey-info">
+                Press <kbd>Ctrl+Shift+E</kbd> to enhance clipboard text
+            </div>
+        </div>
+
+        <div class="clipboard-section">
+            <div class="input-group">
+                <label for="original-text">Original Prompt:</label>
+                <textarea id="original-text" placeholder="Paste your prompt here to enhance it..."></textarea>
+            </div>
+
+            <div class="action-buttons">
+                <button id="enhance-btn" class="btn btn-primary">Enhance Prompt</button>
+                <button id="clear-btn" class="btn btn-secondary">Clear</button>
+            </div>
+
+            <div class="input-group">
+                <label for="enhanced-text">Enhanced Prompt:</label>
+                <textarea id="enhanced-text" placeholder="Enhanced prompt will appear here..." readonly></textarea>
+            </div>
+
+            <div class="action-buttons">
+                <button id="copy-btn" class="btn btn-success" disabled>Copy to Clipboard</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Settings</h3>
+            <div class="setting-group">
+                <label for="model-select">Model:</label>
+                <select id="model-select">
+                    <option value="mistral:7b">Mistral 7B</option>
+                    <option value="llama2:latest">Llama2 Latest</option>
+                    <option value="llama3.2:latest">Llama3.2 Latest</option>
+                    <option value="gemma3n:latest">Gemma3N Latest</option>
+                    <option value="qwen2.5:7b">Qwen2.5 7B</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="ollama-url">Ollama URL:</label>
+                <input type="text" id="ollama-url" value="http://localhost:11434" placeholder="Ollama server URL">
+            </div>
+        </div>
+
+        <footer>
+            <p>Clip Prompt v0.1.0 - Privacy-focused prompt enhancement</p>
+        </footer>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
