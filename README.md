@@ -1,222 +1,180 @@
-# 🎯 Clip Prompt (LEM)
+# Clip Prompt
 
-**Local Enhanced Model** - A cross-platform desktop tray application that improves user-written prompts using local AI models.
+LEM (Local Enhanced Model) is a cross-platform desktop tray application that improves user-written prompts using a locally running language model.
 
 ## Features
 
-- 🔒 **Privacy-focused**: All processing happens offline on your machine
-- ⚡ **Instant enhancement**: Press `Ctrl+Shift+E` to enhance any highlighted text
-- 🖥️ **System tray integration**: Runs quietly in the background
-- 🌐 **Cross-platform**: Works on Windows, macOS, and Linux
-- 🤖 **Local AI models**: Uses Ollama with quantized models for speed
-- 📋 **Clipboard integration**: Seamless copy/paste workflow
+- **🚀 Global Hotkey**: Press `Cmd+Shift+E` (or `Ctrl+Shift+E`) anywhere to enhance text
+- **📋 Clipboard Integration**: Automatically reads, enhances, and replaces clipboard content
+- **🔔 Visual Notifications**: Native system notifications for process feedback
+- **🎯 System Tray**: Runs quietly in the background with tray access
+- **🤖 Local AI**: Uses Ollama for completely offline text enhancement
+- **⚡ Cross-Platform**: Works on macOS, Windows, and Linux
 
 ## How It Works
 
-1. **Highlight text** anywhere (web browser, editor, chat app)
-2. **Press `Ctrl+Shift+E`** (global hotkey)
-3. **Get enhanced prompt** instantly in your clipboard
-4. **Paste** the improved version anywhere
+1. **Select & Copy**: Highlight any text in any application and copy it (`Cmd+C` / `Ctrl+C`)
+2. **Enhance**: Press the global hotkey (`Cmd+Shift+E` / `Ctrl+Shift+E`) 
+3. **Paste**: The enhanced text is automatically placed in your clipboard - just paste (`Cmd+V` / `Ctrl+V`)
+
+**Important**: You must manually copy the text first using `Cmd+C` / `Ctrl+C` before pressing the hotkey.
+
+The app provides visual feedback through system notifications:
+- 🤖 "Enhancing your text..." when processing starts
+- ✅ "Text enhanced! Press Cmd+V to paste" when complete
+- 📋 "Please select some text and press Cmd+C first" if clipboard is empty
+- ❌ Error notifications if something goes wrong
 
 ## Prerequisites
 
-### 1. Install Ollama
+### Ollama Setup
+1. **Install Ollama**: Download from [ollama.ai](https://ollama.ai)
+2. **Install a model**: Run `ollama pull mistral:7b` (or any preferred model)
+3. **Start Ollama**: Run `ollama serve` or ensure it's running as a service
 
-First, install Ollama on your system:
-
-**macOS/Linux:**
-```bash
-curl -fsSL https://ollama.ai/install.sh | sh
-```
-
-**Windows:**
-Download from [https://ollama.ai/download](https://ollama.ai/download)
-
-### 2. Download a Model
-
-Pull a model to use with Clip Prompt:
-
-```bash
-# Recommended for speed and quality
-ollama pull llama2:7b
-
-# Alternative models
-ollama pull mistral:7b
-ollama pull codellama:7b
-```
-
-### 3. Start Ollama
-
-```bash
-ollama serve
-```
+### Development Prerequisites
+- **Rust**: Install from [rustup.rs](https://rustup.rs)
+- **Node.js**: Version 18+ from [nodejs.org](https://nodejs.org)
+- **Tauri CLI**: Install with `npm install -g @tauri-apps/cli`
 
 ## Installation
 
-### Development Setup
+### Option 1: Download Pre-built Release (Recommended)
+1. Download the latest release for your platform:
+   - **macOS**: Download the `.dmg` file
+   - **Windows**: Download the `.msi` installer  
+   - **Linux**: Download the `.AppImage` file
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd clip-prompt
-   ```
+2. **macOS Installation**:
+   - Open the `.dmg` file
+   - Drag "Clip Prompt" to your Applications folder
+   - Launch from Applications or Spotlight
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+3. **Windows Installation**:
+   - Run the `.msi` installer
+   - Follow the installation wizard
+   - Launch from Start Menu or Desktop shortcut
 
-3. **Run in development mode:**
-   ```bash
-   npm run tauri dev
-   ```
+4. **Linux Installation**:
+   - Make the `.AppImage` executable: `chmod +x ClipPrompt.AppImage`
+   - Run directly: `./ClipPrompt.AppImage`
 
-### Building for Production
+### Option 2: Build from Source
 
-1. **Build the application:**
-   ```bash
-   npm run tauri build
-   ```
+```bash
+# Clone the repository
+git clone <repository-url>
+cd clip-prompt
 
-2. **Find the installer** in `src-tauri/target/release/bundle/`
+# Install dependencies
+npm install
+
+# Build for production
+npm run tauri build
+```
+
+**Build artifacts will be created in**:
+- **macOS**: `src-tauri/target/release/bundle/dmg/` (DMG installer) and `src-tauri/target/release/bundle/macos/` (App bundle)
+- **Windows**: `src-tauri/target/release/bundle/msi/` (MSI installer)
+- **Linux**: `src-tauri/target/release/bundle/appimage/` (AppImage)
 
 ## Usage
 
-### Basic Workflow
+### First Launch
+1. **Start the app** - it will appear in your system tray
+2. **Check Ollama connection** - the app will test connectivity on startup
+3. **Configure settings** (optional) - click the tray icon to open settings
 
-1. **Start the application** - It will appear in your system tray
-2. **Highlight any text** you want to enhance
-3. **Press `Ctrl+Shift+E`** - The text will be enhanced automatically
-4. **Paste** the enhanced version anywhere
+### Daily Usage
+1. **Select text** in any application (web browser, text editor, chat app, etc.)
+2. **Copy it** with `Cmd+C` / `Ctrl+C`
+3. **Press the hotkey** `Cmd+Shift+E` / `Ctrl+Shift+E`
+4. **Wait for notification** - you'll see "Enhancing your text..."
+5. **Paste enhanced text** with `Cmd+V` / `Ctrl+V` when you see "Text enhanced!"
 
-### Manual Enhancement
-
-1. **Open the application window** from the system tray
-2. **Paste or type text** in the "Original Text" area
-3. **Click "Enhance Prompt"** or press `Ctrl+Enter`
-4. **Copy the enhanced text** using the "Copy to Clipboard" button
-
-### Settings
-
-- **Model Selection**: Choose from available Ollama models
-- **Ollama URL**: Configure the Ollama server address (default: `http://localhost:11434`)
+### System Tray
+- **Left-click** the tray icon to show/hide the main window
+- **Right-click** for context menu with options:
+  - "Show Window" - Open the main interface
+  - "Quit" - Exit the application
 
 ## Keyboard Shortcuts
 
-- `Ctrl+Shift+E` - Global hotkey to enhance clipboard text
-- `Ctrl+Enter` - Enhance text in the application
+### Global (System-wide)
+- `Cmd+Shift+E` / `Ctrl+Shift+E` - **Enhance clipboard text**
+
+### Application Window
+- `Ctrl+Enter` - Enhance the text in the input field
 - `Ctrl+Shift+C` - Copy enhanced text to clipboard
-- `Escape` - Clear all text
+- `Escape` - Clear input and output fields
+
+## Distribution & Packaging
+
+### Build Information
+- **Binary Size**: ~15MB (release build)
+- **DMG Package Size**: ~5.2MB (compressed)
+- **Minimum macOS**: 10.13 (High Sierra)
+- **Bundle Identifier**: `com.clip-prompt.app`
+
+### Installation Locations
+- **macOS**: `/Applications/Clip Prompt.app`
+- **Windows**: `C:\Program Files\Clip Prompt\`
+- **Linux**: User-defined location (portable AppImage)
+
+### Supported Platforms
+- macOS (Apple Silicon & Intel)
+- Windows (x64)
+- Linux (x64, AppImage format)
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────┐
-│                  User Environment                    │
-│ ┌───────────────┐      ┌──────────────────────────┐ │
-│ │ Any App (Web, │ Ctrl+C │ Highlighted text copied │ │
-│ │ Editor, etc.) │──────▶│ to Clipboard            │ │
-│ └───────────────┘      └──────────────────────────┘ │
-└─────────────────────────────────────────────────────┘
-                        │
-                        ▼ (Ctrl+Shift+E)
-┌─────────────────────────────────────────────────────┐
-│                   Clip Prompt                       │
-│  (Tauri + Rust)                                     │
-│                                                     │
-│  - Global Hotkey Listener                           │
-│  - Clipboard Handler                                │
-│  - REST Client to Ollama                            │
-│  - System Tray UI                                   │
-└─────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│                 Ollama Server                       │
-│      (Local AI Model)                               │
-│                                                     │
-│  - Runs on localhost:11434                          │
-│  - Processes text enhancement                       │
-│  - Returns improved prompts                         │
-└─────────────────────────────────────────────────────┘
-```
+### Backend (Rust/Tauri)
+- **Global Hotkey Management**: Cross-platform hotkey registration
+- **Clipboard Operations**: Read/write system clipboard
+- **HTTP Client**: Communication with Ollama API
+- **System Tray**: Background operation with minimal UI
+- **Notifications**: Native system notification display
 
-## Development
+### Frontend (HTML/CSS/JavaScript)
+- **Settings Interface**: Model selection and configuration
+- **Manual Enhancement**: Direct text input/output for testing
+- **Status Display**: Connection status and operation feedback
 
-### Project Structure
-
-```
-clip-prompt/
-├── src/                    # Frontend (HTML/CSS/JS)
-│   ├── index.html         # Main UI
-│   ├── styles.css         # Styling
-│   └── main.js           # Frontend logic
-├── src-tauri/             # Backend (Rust)
-│   ├── src/
-│   │   ├── main.rs       # Entry point
-│   │   └── lib.rs        # Core functionality
-│   ├── Cargo.toml        # Rust dependencies
-│   └── tauri.conf.json   # Tauri configuration
-└── package.json          # Node.js dependencies
-```
-
-### Key Components
-
-- **Global Hotkey Handler**: Listens for `Ctrl+Shift+E` globally
-- **Clipboard Manager**: Handles reading/writing clipboard content
-- **Ollama Client**: Communicates with local AI model server
-- **System Tray**: Provides minimal UI and settings access
-
-### Adding New Features
-
-1. **Backend (Rust)**: Add commands in `src-tauri/src/lib.rs`
-2. **Frontend (JavaScript)**: Update UI logic in `src/main.js`
-3. **UI (HTML/CSS)**: Modify interface in `src/index.html` and `src/styles.css`
+### External Dependencies
+- **Ollama**: Local AI model server (user-installed)
+- **AI Models**: Any Ollama-compatible model (mistral:7b recommended)
 
 ## Troubleshooting
 
 ### Common Issues
 
 **"Failed to connect to Ollama"**
-- Ensure Ollama is running: `ollama serve`
-- Check the URL in settings (default: `http://localhost:11434`)
-- Verify the model is downloaded: `ollama list`
+- Ensure Ollama is installed and running: `ollama serve`
+- Check if models are available: `ollama list`
+- Verify Ollama is accessible at `http://localhost:11434`
 
-**"Global hotkey not working"**
-- Check if another application is using the same shortcut
-- Restart the application
+**"Hotkey not working"**
+- Check if another app is using the same hotkey
+- Try restarting the application
 - On macOS, ensure accessibility permissions are granted
 
-**"Clipboard operations failing"**
-- Check system clipboard permissions
-- Restart the application
-- Try copying/pasting manually first
+**"No text in clipboard"**
+- Make sure you copy text before pressing the hotkey
+- The app only works with text content (not images or files)
 
-### Logs
+**"Enhancement takes too long"**
+- Try a smaller/faster model like `qwen2.5:0.5b`
+- Check if your system has sufficient resources
+- Restart Ollama if it becomes unresponsive
 
-Enable debug logging by setting the environment variable:
-```bash
-RUST_LOG=debug npm run tauri dev
-```
+### Logs & Debugging
+- **Development**: Run with `npm run dev` to see console output
+- **Production**: Check system logs or run from terminal to see output
 
-## Contributing
+## Development
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development setup and contribution guidelines.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- [Tauri](https://tauri.app/) - Cross-platform desktop framework
-- [Ollama](https://ollama.ai/) - Local AI model server
-- [Llama2](https://ai.meta.com/llama/) - Open source language model
-
----
-
-**Made with ❤️ for privacy-conscious AI users**
+MIT License - see [LICENSE](LICENSE) for details.
