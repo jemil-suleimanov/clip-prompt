@@ -72,6 +72,12 @@ jobs:
           pkg-config --exists ayatana-appindicator-0.1 && echo "Ayatana appindicator found" || echo "Ayatana appindicator not found"
           npm run tauri build
 
+      - name: List bundle files
+        run: |
+          echo "=== Bundle files ==="
+          find src-tauri/target/release/bundle/ -type f -name "*" | head -20
+          echo "=== End bundle files ==="
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -84,6 +90,7 @@ jobs:
             src-tauri/target/release/bundle/**/*.rpm
             src-tauri/target/release/bundle/**/*.AppImage
             src-tauri/target/release/bundle/**/*.tar.gz
+          if-no-files-found: warn
 
   create-release:
     name: Create Release
@@ -103,9 +110,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/clip-prompt-macos-latest/**/*
-            artifacts/clip-prompt-ubuntu-latest/**/*
-            artifacts/clip-prompt-windows-latest/**/*
+            artifacts/clip-prompt-macos-latest/**/*.dmg
+            artifacts/clip-prompt-macos-latest/**/*.app.tar.gz
+            artifacts/clip-prompt-ubuntu-latest/**/*.deb
+            artifacts/clip-prompt-ubuntu-latest/**/*.rpm
+            artifacts/clip-prompt-windows-latest/**/*.msi
+            artifacts/clip-prompt-windows-latest/**/*.exe
           generate_release_notes: true
           draft: false
           prerelease: false
