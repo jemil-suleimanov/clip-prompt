@@ -35,24 +35,11 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev \
-            build-essential \
-            curl \
-            wget \
-            libssl-dev \
-            libgtk-3-dev \
-            librsvg2-dev \
-            libnotify-dev \
-            libayatana-appindicator3-dev \
-            libayatana-appindicator3-1 \
-            pkg-config
+          sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential libssl-dev libgtk-3-dev
 
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos-latest'
-        run: |
-          echo "=== Installing macOS dependencies ==="
-          brew install openssl
-          echo "=== macOS dependencies installed ==="
+        run: brew install openssl
 
       - name: Install dependencies (Windows)
         if: matrix.platform == 'windows-latest'
@@ -66,31 +53,9 @@ jobs:
         run: npm ci
 
       - name: Build with Tauri
-        env:
-          RUST_BACKTRACE: 1
-          PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig"
-        run: |
-          echo "=== Starting Tauri build for ${{ matrix.platform }} ==="
-          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
-            echo "=== Ubuntu-specific checks ==="
-            pkg-config --list-all | grep appindicator || echo "No appindicator found"
-            pkg-config --exists ayatana-appindicator-0.1 && echo "Ayatana appindicator found" || echo "Ayatana appindicator not found"
-            echo "=== End Ubuntu-specific checks ==="
-          fi
-          echo "Running: npm run tauri build"
-          npm run tauri build
-          echo "=== Tauri build completed for ${{ matrix.platform }} ==="
+        run: npm run tauri build
 
-      - name: List bundle files
-        run: |
-          echo "=== Bundle files for ${{ matrix.platform }} ==="
-          echo "Checking if bundle directory exists:"
-          ls -la src-tauri/target/release/ || echo "Release directory not found"
-          echo "Bundle directory contents:"
-          ls -la src-tauri/target/release/bundle/ || echo "Bundle directory not found"
-          echo "All bundle files:"
-          find src-tauri/target/release/bundle/ -type f -name "*" 2>/dev/null | head -50 || echo "No bundle files found"
-          echo "=== End bundle files for ${{ matrix.platform }} ==="
+
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -112,22 +77,7 @@ jobs:
         with:
           path: artifacts
 
-      - name: Debug artifacts
-        run: |
-          echo "=== Debugging artifacts ==="
-          echo "Current directory: $(pwd)"
-          echo "Artifacts directory structure:"
-          find artifacts -type f -name "*" | head -50
-          echo "=== End artifacts debug ==="
 
-      - name: Clean artifacts
-        run: |
-          echo "=== Cleaning artifacts ==="
-          find artifacts -name "control.tar.gz" -delete
-          find artifacts -name "data.tar.gz" -delete
-          find artifacts -name "debian-binary" -delete
-          find artifacts -name "*.so" -delete
-          echo "=== Cleaned artifacts ==="
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
