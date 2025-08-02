@@ -50,7 +50,9 @@ jobs:
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos-latest'
         run: |
+          echo "=== Installing macOS dependencies ==="
           brew install openssl
+          echo "=== macOS dependencies installed ==="
 
       - name: Install dependencies (Windows)
         if: matrix.platform == 'windows-latest'
@@ -68,17 +70,24 @@ jobs:
           RUST_BACKTRACE: 1
           PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig"
         run: |
-          pkg-config --list-all | grep appindicator || echo "No appindicator found"
-          pkg-config --exists ayatana-appindicator-0.1 && echo "Ayatana appindicator found" || echo "Ayatana appindicator not found"
+          echo "=== Starting Tauri build for ${{ matrix.platform }} ==="
+          if [ "${{ matrix.platform }}" == "ubuntu-latest" ]; then
+            pkg-config --list-all | grep appindicator || echo "No appindicator found"
+            pkg-config --exists ayatana-appindicator-0.1 && echo "Ayatana appindicator found" || echo "Ayatana appindicator not found"
+          fi
+          echo "Running: npm run tauri build"
           npm run tauri build
+          echo "=== Tauri build completed for ${{ matrix.platform }} ==="
 
       - name: List bundle files
         run: |
           echo "=== Bundle files for ${{ matrix.platform }} ==="
+          echo "Checking if bundle directory exists:"
+          ls -la src-tauri/target/release/ || echo "Release directory not found"
           echo "Bundle directory contents:"
           ls -la src-tauri/target/release/bundle/ || echo "Bundle directory not found"
           echo "All bundle files:"
-          find src-tauri/target/release/bundle/ -type f -name "*" | head -50
+          find src-tauri/target/release/bundle/ -type f -name "*" 2>/dev/null | head -50 || echo "No bundle files found"
           echo "=== End bundle files for ${{ matrix.platform }} ==="
 
       - name: Upload artifacts
