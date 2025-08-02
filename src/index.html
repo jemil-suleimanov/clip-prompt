@@ -66,10 +66,9 @@
         <header class="bg-[var(--surface-color)] shadow-md">
             <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <img src="../src-tauri/icons/icon.png" alt="Clip Prompt" class="h-8 w-8">
+                    <img src="./assets/app-icon.png" alt="Clip Prompt" class="h-8 w-8">
                     <h1 class="text-xl font-bold">Clip Prompt</h1>
                 </div>
-                <button id="hideToTrayBtn" class="button_secondary text-sm">Hide to Tray</button>
             </div>
         </header>
         
@@ -188,6 +187,77 @@
                                     No models available. Please install models with: <code class="bg-[var(--accent-color)] px-1 rounded">ollama pull model-name</code>
                                 </p>
                             </div>
+                            
+                            <div id="ollamaNotInstalled" class="hidden">
+                                <div class="bg-red-900/20 border border-red-500/30 rounded-md p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-medium text-red-400 flex items-center gap-2">
+                                            <span>🚫</span>
+                                            Ollama Not Installed
+                                        </h4>
+                                        <button id="toggleInstallInstructions" class="text-red-400 hover:text-red-300 text-sm">
+                                            Show Instructions ▼
+                                        </button>
+                                    </div>
+                                    <p class="text-sm text-red-300 mb-3">
+                                        Clip Prompt requires Ollama to be installed and running. Please install Ollama first.
+                                    </p>
+                                    <div id="installInstructions" class="hidden space-y-4">
+                                        <div class="space-y-3">
+                                            <div>
+                                                <h5 class="font-medium text-red-300 mb-2">macOS Installation:</h5>
+                                                <div class="bg-[var(--accent-color)] rounded p-3 text-sm">
+                                                    <p class="mb-2">Install using Homebrew:</p>
+                                                    <code class="bg-black/30 px-2 py-1 rounded block mb-2">brew install ollama</code>
+                                                    <p class="mb-2">Or download from:</p>
+                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline">https://ollama.ai/download</a>
+                                                </div>
+                                            </div>
+                                            
+                                            <div>
+                                                <h5 class="font-medium text-red-300 mb-2">Windows Installation:</h5>
+                                                <div class="bg-[var(--accent-color)] rounded p-3 text-sm">
+                                                    <p class="mb-2">Download and install from:</p>
+                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline">https://ollama.ai/download</a>
+                                                </div>
+                                            </div>
+                                            
+                                            <div>
+                                                <h5 class="font-medium text-red-300 mb-2">Linux Installation:</h5>
+                                                <div class="bg-[var(--accent-color)] rounded p-3 text-sm">
+                                                    <p class="mb-2">Install using curl:</p>
+                                                    <code class="bg-black/30 px-2 py-1 rounded block mb-2">curl -fsSL https://ollama.ai/install.sh | sh</code>
+                                                    <p class="mb-2">Or download from:</p>
+                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline">https://ollama.ai/download</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-blue-900/20 border border-blue-500/30 rounded p-3">
+                                            <h5 class="font-medium text-blue-300 mb-2">After Installation:</h5>
+                                            <ol class="text-sm text-blue-300 space-y-1 list-decimal list-inside">
+                                                <li>Start Ollama: <code class="bg-black/30 px-1 rounded">ollama serve</code></li>
+                                                <li>Install a model: <code class="bg-black/30 px-1 rounded">ollama pull mistral:7b</code></li>
+                                                <li>Restart Clip Prompt</li>
+                                            </ol>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="font-medium text-[var(--text-primary)] flex items-center gap-2">
+                                    <span>⚙️</span>
+                                    System Prompt
+                                </label>
+                                <button id="resetSystemPrompt" class="text-xs text-[var(--primary-color)] hover:text-blue-300">
+                                    Reset to Default
+                                </button>
+                            </div>
+                            <textarea class="input w-full" id="systemPrompt" rows="8" placeholder="Enter your custom system prompt..."></textarea>
+                            <p class="text-xs text-[var(--text-secondary)]">Customize how the AI enhances your text. Leave empty to use default.</p>
                         </div>
                         
                         <div class="space-y-3">
@@ -261,7 +331,6 @@
                     <h3 class="typography_h2 flex items-center gap-2">
                         <span>🧪</span>
                         Manual Test
-                        <span class="text-sm font-normal text-[var(--text-secondary)]">(Optional)</span>
                     </h3>
                     
                     <div class="space-y-4">

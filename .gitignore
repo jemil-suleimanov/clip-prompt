@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+ACTION_PLAN.md
+DEVELOPMENT.md

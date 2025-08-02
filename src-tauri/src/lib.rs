@@ -11,6 +11,67 @@ use anyhow::Result;
 use log::{info, error, debug};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 
+const DEFAULT_SYSTEM_PROMPT: &str = r#"<system_prompt>
+YOU ARE A LOCAL PROMPT ENHANCER RUNNING ENTIRELY ON THE USER'S MACHINE.
+
+YOUR EXCLUSIVE MISSION IS TO READ THE USER'S RAW INPUT PROMPT AND REWRITE IT INTO A MORE DETAILED, CLEAR, AND WELL‑STRUCTURED PROMPT THAT ANOTHER AI ASSISTANT COULD DIRECTLY USE TO PRODUCE THE BEST POSSIBLE OUTPUT.
+
+### CORE BEHAVIORS ###
+- DETECT THE LANGUAGE OF THE INPUT AND OUTPUT IN THE SAME LANGUAGE.
+- ANALYZE THE COMPLEXITY OF THE USER'S INPUT:
+  • IF THE INPUT IS VERY SIMPLE OR SHORT (E.G., "CARBONARA RECIPE"), ENHANCE ONLY SLIGHTLY — KEEP THE OUTPUT BRIEF, CLEAR, AND STILL SIMPLE.
+  • IF THE INPUT IS MODERATELY DETAILED, EXPAND IT WITH ADDITIONAL CONTEXT AND PARAMETERS.
+  • IF THE INPUT IS COMPLEX OR AMBIGUOUS, ADD RICH DETAILS, RELEVANT CONSTRAINTS, AND CLARIFY THE INTENT AS MUCH AS POSSIBLE.
+- ALWAYS PRESERVE THE ORIGINAL INTENT AND MEANING.
+- OUTPUT ONLY THE ENHANCED PROMPT — NOTHING ELSE.
+
+### INSTRUCTIONS ###
+- NEVER ANSWER THE PROMPT OR GIVE TIPS.
+- NEVER ADD EXPLANATIONS, NOTES, OR COMMENTS.
+- ALWAYS PRODUCE ONE SINGLE PROMPT, NO BULLET LISTS OR MULTIPLE VERSIONS.
+- IF THE ORIGINAL IS VAGUE, INFER AND ADD REASONABLE CONTEXT.
+- IF THE ORIGINAL IS ALREADY DETAILED, IMPROVE STRUCTURE AND ADD MORE ACTIONABLE PARAMETERS.
+- AVOID OVERCOMPLICATING WHEN THE INPUT IS OBVIOUSLY SIMPLE AND SELF‑CONTAINED.
+
+### CHAIN OF THOUGHTS ###
+FOLLOW THESE STEPS INTERNALLY BEFORE PRODUCING OUTPUT:
+1. **UNDERSTAND**: READ the raw input and DETECT language and intent.
+2. **BASICS**: IDENTIFY subject, domain, and goal.
+3. **BREAK DOWN**: SPLIT the intent into sub‑tasks or aspects.
+4. **ANALYZE**: DETERMINE what extra details would meaningfully improve the prompt.
+5. **ADJUST COMPLEXITY**: MATCH output detail level to input complexity.
+6. **EDGE CASES**: CHECK for ambiguous or overly broad inputs and clarify carefully.
+7. **FINAL ANSWER**: OUTPUT ONLY the rewritten prompt in the same language.
+
+### WHAT NOT TO DO ###
+- DO NOT ANSWER THE USER'S ORIGINAL PROMPT.
+- DO NOT OUTPUT IN A DIFFERENT LANGUAGE THAN THE INPUT.
+- DO NOT SAY "THE USER WANTS…" OR "HERE IS YOUR PROMPT…".
+- DO NOT OUTPUT MULTIPLE PROMPTS OR EXPLANATIONS.
+- DO NOT OVEREXPAND A SIMPLE PROMPT INTO AN UNRELATED OR EXCESSIVE TASK.
+- DO NOT OMIT KEY DETAILS FROM THE USER'S INTENT.
+- DO NOT ADD IRRELEVANT CONTEXT.
+
+### FEW‑SHOT EXAMPLES ###
+
+**Example 1 (simple)**
+Input: `carbonara recipe`  
+Output: `Provide a simple, authentic carbonara recipe with a short list of key ingredients and clear step-by-step instructions.`
+
+**Example 2 (moderate)**
+Input: `improve my resume`  
+Output: `Revise and enhance my resume by highlighting my key achievements, quantifying results wherever possible, improving clarity and impact, and ensuring it is tailored to the target industry.`
+
+**Example 3 (complex)**
+Input: `how to improve A`  
+Output: `Explain how to improve A by integrating B and optimizing C parameters, while also considering D and F to ensure scalability, accuracy, and long-term maintainability.`
+
+**Example 4 (non‑English)**
+Input: `Consejos para cultivar tomates`  
+Output: `Proporciona consejos detallados y prácticos para cultivar tomates, incluyendo condiciones de suelo, riego, fertilización, control de plagas y cuidados estacionales.`
+
+</system_prompt>"#;
+
 #[derive(Debug, Serialize, Deserialize)]
 struct OllamaResponse {
     model: String,
@@ -37,6 +98,7 @@ struct OllamaRequest {
 struct AppState {
     ollama_url: String,
     model_name: Mutex<String>,
+    system_prompt: Mutex<String>,
 }
 
 impl Default for AppState {
@@ -44,6 +106,7 @@ impl Default for AppState {
         Self {
             ollama_url: "http://localhost:11434".to_string(),
             model_name: Mutex::new("".to_string()), // Will be set dynamically
+            system_prompt: Mutex::new("".to_string()), // Will be set dynamically
         }
     }
 }
@@ -52,66 +115,15 @@ impl Default for AppState {
 async fn enhance_prompt(prompt: String, model: Option<String>, state: tauri::State<'_, AppState>) -> Result<String, String> {
     debug!("Enhance prompt called with: {}", prompt);
     
-    let system_prompt = r#"<system_prompt>
-YOU ARE A LOCAL PROMPT ENHANCER RUNNING ENTIRELY ON THE USER’S MACHINE.
-
-YOUR EXCLUSIVE MISSION IS TO READ THE USER’S RAW INPUT PROMPT AND REWRITE IT INTO A MORE DETAILED, CLEAR, AND WELL‑STRUCTURED PROMPT THAT ANOTHER AI ASSISTANT COULD DIRECTLY USE TO PRODUCE THE BEST POSSIBLE OUTPUT.
-
-### CORE BEHAVIORS ###
-- DETECT THE LANGUAGE OF THE INPUT AND OUTPUT IN THE SAME LANGUAGE.
-- ANALYZE THE COMPLEXITY OF THE USER’S INPUT:
-  • IF THE INPUT IS VERY SIMPLE OR SHORT (E.G., “CARBONARA RECIPE”), ENHANCE ONLY SLIGHTLY — KEEP THE OUTPUT BRIEF, CLEAR, AND STILL SIMPLE.
-  • IF THE INPUT IS MODERATELY DETAILED, EXPAND IT WITH ADDITIONAL CONTEXT AND PARAMETERS.
-  • IF THE INPUT IS COMPLEX OR AMBIGUOUS, ADD RICH DETAILS, RELEVANT CONSTRAINTS, AND CLARIFY THE INTENT AS MUCH AS POSSIBLE.
-- ALWAYS PRESERVE THE ORIGINAL INTENT AND MEANING.
-- OUTPUT ONLY THE ENHANCED PROMPT — NOTHING ELSE.
-
-### INSTRUCTIONS ###
-- NEVER ANSWER THE PROMPT OR GIVE TIPS.
-- NEVER ADD EXPLANATIONS, NOTES, OR COMMENTS.
-- ALWAYS PRODUCE ONE SINGLE PROMPT, NO BULLET LISTS OR MULTIPLE VERSIONS.
-- IF THE ORIGINAL IS VAGUE, INFER AND ADD REASONABLE CONTEXT.
-- IF THE ORIGINAL IS ALREADY DETAILED, IMPROVE STRUCTURE AND ADD MORE ACTIONABLE PARAMETERS.
-- AVOID OVERCOMPLICATING WHEN THE INPUT IS OBVIOUSLY SIMPLE AND SELF‑CONTAINED.
-
-### CHAIN OF THOUGHTS ###
-FOLLOW THESE STEPS INTERNALLY BEFORE PRODUCING OUTPUT:
-1. **UNDERSTAND**: READ the raw input and DETECT language and intent.
-2. **BASICS**: IDENTIFY subject, domain, and goal.
-3. **BREAK DOWN**: SPLIT the intent into sub‑tasks or aspects.
-4. **ANALYZE**: DETERMINE what extra details would meaningfully improve the prompt.
-5. **ADJUST COMPLEXITY**: MATCH output detail level to input complexity.
-6. **EDGE CASES**: CHECK for ambiguous or overly broad inputs and clarify carefully.
-7. **FINAL ANSWER**: OUTPUT ONLY the rewritten prompt in the same language.
-
-### WHAT NOT TO DO ###
-- DO NOT ANSWER THE USER’S ORIGINAL PROMPT.
-- DO NOT OUTPUT IN A DIFFERENT LANGUAGE THAN THE INPUT.
-- DO NOT SAY “THE USER WANTS…” OR “HERE IS YOUR PROMPT…”.
-- DO NOT OUTPUT MULTIPLE PROMPTS OR EXPLANATIONS.
-- DO NOT OVEREXPAND A SIMPLE PROMPT INTO AN UNRELATED OR EXCESSIVE TASK.
-- DO NOT OMIT KEY DETAILS FROM THE USER’S INTENT.
-- DO NOT ADD IRRELEVANT CONTEXT.
-
-### FEW‑SHOT EXAMPLES ###
-
-**Example 1 (simple)**
-Input: `carbonara recipe`  
-Output: `Provide a simple, authentic carbonara recipe with a short list of key ingredients and clear step-by-step instructions.`
-
-**Example 2 (moderate)**
-Input: `improve my resume`  
-Output: `Revise and enhance my resume by highlighting my key achievements, quantifying results wherever possible, improving clarity and impact, and ensuring it is tailored to the target industry.`
-
-**Example 3 (complex)**
-Input: `how to improve A`  
-Output: `Explain how to improve A by integrating B and optimizing C parameters, while also considering D and F to ensure scalability, accuracy, and long-term maintainability.`
-
-**Example 4 (non‑English)**
-Input: `Consejos para cultivar tomates`  
-Output: `Proporciona consejos detallados y prácticos para cultivar tomates, incluyendo condiciones de suelo, riego, fertilización, control de plagas y cuidados estacionales.`
-
-</system_prompt>"#;
+    // Get the system prompt from state or use default
+    let system_prompt = {
+        let custom_prompt = state.system_prompt.lock().unwrap().clone();
+        if custom_prompt.is_empty() {
+            DEFAULT_SYSTEM_PROMPT.to_string()
+        } else {
+            custom_prompt
+        }
+    };
 
     let full_prompt = format!("{}\n\nUser input: {}\n\nEnhanced prompt:", system_prompt, prompt);
 
@@ -321,6 +333,63 @@ async fn set_initial_model(state: tauri::State<'_, AppState>) -> Result<String, 
         Err(e) => {
             error!("Failed to lock model_name mutex: {}", e);
             Err("Failed to set initial model".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+async fn update_system_prompt(prompt: String, state: tauri::State<'_, AppState>) -> Result<(), String> {
+    debug!("Updating system prompt...");
+    
+    match state.system_prompt.lock() {
+        Ok(mut system_prompt) => {
+            *system_prompt = prompt.clone();
+            debug!("System prompt updated successfully");
+            Ok(())
+        },
+        Err(e) => {
+            error!("Failed to lock system_prompt mutex: {}", e);
+            Err("Failed to update system prompt".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+async fn get_system_prompt(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    debug!("Getting system prompt...");
+    
+    match state.system_prompt.lock() {
+        Ok(system_prompt) => {
+            let prompt = system_prompt.clone();
+            if prompt.is_empty() {
+                // Return default prompt if no custom prompt is set
+                debug!("No custom prompt set, returning default");
+                Ok(DEFAULT_SYSTEM_PROMPT.to_string())
+            } else {
+                debug!("Custom system prompt retrieved successfully");
+                Ok(prompt)
+            }
+        },
+        Err(e) => {
+            error!("Failed to lock system_prompt mutex: {}", e);
+            Err("Failed to get system prompt".to_string())
+        }
+    }
+}
+
+#[tauri::command]
+async fn reset_system_prompt(state: tauri::State<'_, AppState>) -> Result<(), String> {
+    debug!("Resetting system prompt to default...");
+    
+    match state.system_prompt.lock() {
+        Ok(mut system_prompt) => {
+            *system_prompt = "".to_string(); // Empty string means use default
+            debug!("System prompt reset to default successfully");
+            Ok(())
+        },
+        Err(e) => {
+            error!("Failed to lock system_prompt mutex: {}", e);
+            Err("Failed to reset system prompt".to_string())
         }
     }
 }
@@ -601,8 +670,9 @@ pub fn run() {
         .manage(AppState {
             ollama_url: "http://localhost:11434".to_string(),
             model_name: Mutex::new("".to_string()), // Will be set dynamically
+            system_prompt: Mutex::new("".to_string()), // Will be set dynamically
         })
-        .invoke_handler(tauri::generate_handler![enhance_prompt, test_ollama_connection, get_available_models, enable_autostart, disable_autostart, is_autostart_enabled, get_platform, update_model, set_initial_model])
+        .invoke_handler(tauri::generate_handler![enhance_prompt, test_ollama_connection, get_available_models, enable_autostart, disable_autostart, is_autostart_enabled, get_platform, update_model, set_initial_model, update_system_prompt, get_system_prompt, reset_system_prompt])
         .setup(|app| {
             println!("🚀 Setting up Clip Prompt...");
             info!("Clip Prompt started successfully");

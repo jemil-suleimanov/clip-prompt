@@ -17,7 +17,13 @@ async function init() {
     await loadSettings();
     
     // Test Ollama connection
-    await testOllamaConnection();
+    const connectionSuccess = await testOllamaConnection();
+    
+    // If connection failed, don't try to load models
+    if (!connectionSuccess) {
+        console.log('❌ Skipping model loading due to connection failure');
+        return;
+    }
     
     // Load available models and set initial model
     await loadAvailableModels();
@@ -36,10 +42,21 @@ function setupEventListeners() {
     document.getElementById('enhanceBtn').addEventListener('click', handleEnhance);
     document.getElementById('clearBtn').addEventListener('click', handleClear);
     document.getElementById('copyBtn').addEventListener('click', handleCopy);
-    document.getElementById('hideToTrayBtn').addEventListener('click', handleHideToTray);
     
     // Settings event listeners
     document.getElementById('modelSelect').addEventListener('change', handleModelChange);
+    document.getElementById('toggleInstallInstructions').addEventListener('click', toggleInstallInstructions);
+    document.getElementById('resetSystemPrompt').addEventListener('click', handleResetSystemPrompt);
+    document.getElementById('systemPrompt').addEventListener('input', handleSystemPromptChange);
+    
+    // Add click handlers for download links
+    document.querySelectorAll('a[href*="ollama.ai"]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Use Tauri's shell plugin to open the URL
+            window.__TAURI__.shell.open(link.href);
+        });
+    });
     
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
@@ -58,21 +75,6 @@ function setupEventListeners() {
     console.log('✅ Event listeners set up');
 }
 
-/**
- * Handle hide to tray action
- */
-async function handleHideToTray() {
-    try {
-        console.log('🔄 Hiding window to tray...');
-        // Use Tauri's window API to hide the window
-        const { getCurrent } = window.__TAURI__.window;
-        const currentWindow = getCurrent();
-        await currentWindow.hide();
-        console.log('✅ Window hidden to tray');
-    } catch (error) {
-        console.error('❌ Failed to hide window:', error);
-    }
-}
 
 /**
  * Handle model change
@@ -236,12 +238,80 @@ async function testOllamaConnection() {
     try {
         await invoke('test_ollama_connection');
         updateOllamaStatus('connected', 'Connected to Ollama');
+        
+        // Hide Ollama not installed warning
+        document.getElementById('ollamaNotInstalled').classList.add('hidden');
+        
         console.log('✅ Ollama connection successful');
         return true;
     } catch (error) {
         console.error('❌ Ollama connection failed:', error);
         updateOllamaStatus('error', `Connection failed: ${error}`);
+        
+        // Show Ollama not installed warning
+        document.getElementById('ollamaNotInstalled').classList.remove('hidden');
+        
         return false;
+    }
+}
+
+/**
+ * Toggle install instructions visibility
+ */
+function toggleInstallInstructions() {
+    const instructions = document.getElementById('installInstructions');
+    const button = document.getElementById('toggleInstallInstructions');
+    
+    if (instructions.classList.contains('hidden')) {
+        instructions.classList.remove('hidden');
+        button.textContent = 'Hide Instructions ▲';
+    } else {
+        instructions.classList.add('hidden');
+        button.textContent = 'Show Instructions ▼';
+    }
+}
+
+/**
+ * Handle system prompt change
+ */
+async function handleSystemPromptChange() {
+    const systemPrompt = document.getElementById('systemPrompt').value;
+    
+    try {
+        await invoke('update_system_prompt', { prompt: systemPrompt });
+        console.log('✅ System prompt updated');
+        
+        // Save to localStorage
+        localStorage.setItem('systemPrompt', systemPrompt);
+    } catch (error) {
+        console.error('❌ Failed to update system prompt:', error);
+    }
+}
+
+/**
+ * Handle reset system prompt to default
+ */
+async function handleResetSystemPrompt() {
+    try {
+        await invoke('reset_system_prompt');
+        console.log('✅ System prompt reset to default');
+        
+        // Remove from localStorage
+        localStorage.removeItem('systemPrompt');
+        
+        // Show default prompt in textarea
+        try {
+            const defaultPrompt = await invoke('get_system_prompt');
+            document.getElementById('systemPrompt').value = defaultPrompt;
+            console.log('📝 Reset to default system prompt');
+        } catch (error) {
+            console.error('❌ Failed to load default prompt after reset:', error);
+        }
+        
+        // Show success message
+        console.log('✅ System prompt reset to default');
+    } catch (error) {
+        console.error('❌ Failed to reset system prompt:', error);
     }
 }
 
@@ -278,8 +348,9 @@ async function loadAvailableModels() {
             return;
         }
         
-        // Hide warning message if models are available
+        // Hide warning messages if models are available
         document.getElementById('modelWarning').classList.add('hidden');
+        document.getElementById('ollamaNotInstalled').classList.add('hidden');
         
         // Add models to dropdown (models is an array of strings)
         models.forEach(modelName => {
@@ -324,6 +395,11 @@ async function loadAvailableModels() {
         
         // Show warning message
         document.getElementById('modelWarning').classList.remove('hidden');
+        
+        // Show Ollama not installed warning if it's a connection error
+        if (error.includes('Connection failed') || error.includes('Failed to send request')) {
+            document.getElementById('ollamaNotInstalled').classList.remove('hidden');
+        }
     }
 }
 
@@ -444,6 +520,27 @@ async function loadSettings() {
             
             // Update the backend model to match the saved setting
             await invoke('update_model', { model: savedModel });
+        }
+        
+        // Load system prompt
+        const savedSystemPrompt = localStorage.getItem('systemPrompt');
+        const systemPromptTextarea = document.getElementById('systemPrompt');
+        
+        if (savedSystemPrompt) {
+            // Use saved custom prompt
+            systemPromptTextarea.value = savedSystemPrompt;
+            
+            // Update the backend system prompt to match the saved setting
+            await invoke('update_system_prompt', { prompt: savedSystemPrompt });
+        } else {
+            // Show default prompt in textarea (but don't save it as custom)
+            try {
+                const defaultPrompt = await invoke('get_system_prompt');
+                systemPromptTextarea.value = defaultPrompt;
+                console.log('📝 Loaded default system prompt into textarea');
+            } catch (error) {
+                console.error('❌ Failed to load default system prompt:', error);
+            }
         }
         
         // Note: Autostart status is checked from system on startup

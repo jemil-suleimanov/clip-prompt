@@ -1,66 +1,244 @@
 # Clip Prompt
 
-LEM (Local Enhanced Model) is a cross-platform desktop tray application that improves user-written prompts using a locally running language model.
+**Clip Prompt** is a powerful cross-platform desktop application that enhances your text prompts using local AI models. It runs quietly in your system tray and provides instant text enhancement through a global hotkey, making it perfect for writers, developers, students, and anyone who wants to improve their text with AI assistance.
 
-## Features
+## ✨ Features
 
-- **🚀 Global Hotkey**: Press `Cmd+Shift+E` (or `Ctrl+Shift+E`) anywhere to enhance text
-- **📋 Clipboard Integration**: Automatically reads, enhances, and replaces clipboard content
-- **🔔 Visual Notifications**: Native system notifications for process feedback
-- **🎯 System Tray**: Runs quietly in the background with tray access
-- **🤖 Local AI**: Uses Ollama for completely offline text enhancement
-- **⚡ Cross-Platform**: Works on macOS, Windows, and Linux
+### 🚀 Core Functionality
+- **Global Hotkey Enhancement**: Press `Cmd+Shift+E` (or `Ctrl+Shift+E`) anywhere to enhance text
+- **Smart Clipboard Integration**: Automatically reads, enhances, and replaces clipboard content
+- **Local AI Processing**: Uses Ollama for completely offline, private text enhancement
+- **System Tray Operation**: Runs quietly in the background with easy tray access
+- **Cross-Platform Support**: Works seamlessly on macOS, Windows, and Linux
 
-## How It Works
+### ⚙️ Advanced Features
+- **Custom System Prompts**: Fully customizable AI behavior and enhancement style
+- **Model Selection**: Choose from any Ollama-compatible AI model
+- **Autostart Support**: Configure the app to start automatically with your system
+- **Real-time Status Monitoring**: Live connection status for Ollama and model availability
+- **Visual Notifications**: Native system notifications for process feedback
+- **Settings Persistence**: All preferences saved automatically
 
-1. **Select & Copy**: Highlight any text in any application and copy it (`Cmd+C` / `Ctrl+C`)
-2. **Enhance**: Press the global hotkey (`Cmd+Shift+E` / `Ctrl+Shift+E`) 
-3. **Paste**: The enhanced text is automatically placed in your clipboard - just paste (`Cmd+V` / `Ctrl+V`)
+### 🎯 User Experience
+- **One-Click Enhancement**: Simple copy → hotkey → paste workflow
+- **Smart Error Handling**: Helpful notifications and instructions for common issues
+- **Ollama Integration Guide**: Built-in installation instructions for different platforms
+- **Reset to Default**: Easy restoration of default settings
+- **Hide to Tray**: Minimize to system tray without closing
+
+## 🚀 Quick Start
+
+### 1. Install Ollama
+**Clip Prompt requires Ollama to be installed and running.**
+
+#### macOS Installation:
+```bash
+# Using Homebrew (recommended)
+brew install ollama
+
+# Or download from website
+# Visit https://ollama.ai/download
+```
+
+#### Windows Installation:
+- Download from [ollama.ai/download](https://ollama.ai/download)
+- Run the installer and follow the setup wizard
+
+#### Linux Installation:
+```bash
+# Using curl
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Or download from website
+# Visit https://ollama.ai/download
+```
+
+### 2. Install AI Models
+```bash
+# Start Ollama
+ollama serve
+
+# Install a model (in a new terminal)
+ollama pull mistral:7b    # Good balance of speed and quality
+# or
+ollama pull qwen2.5:7b    # Fast and efficient
+# or
+ollama pull llama2:7b     # Classic option
+```
+
+### 3. Install Clip Prompt
+Download the latest release for your platform from the releases page and install.
+
+### 4. Start Using
+1. **Select text** in any application
+2. **Copy it** (`Cmd+C` / `Ctrl+C`)
+3. **Press hotkey** (`Cmd+Shift+E` / `Ctrl+Shift+E`)
+4. **Paste enhanced text** (`Cmd+V` / `Ctrl+V`)
+
+## 📖 Detailed Usage Guide
+
+### Basic Workflow
+The core workflow is simple and consistent:
+
+1. **Select & Copy**: Highlight any text in any application and copy it
+2. **Enhance**: Press the global hotkey (`Cmd+Shift+E` / `Ctrl+Shift+E`)
+3. **Paste**: The enhanced text is automatically placed in your clipboard
 
 **Important**: You must manually copy the text first using `Cmd+C` / `Ctrl+C` before pressing the hotkey.
 
-The app provides visual feedback through system notifications:
+### System Tray Interface
+- **Left-click tray icon**: Opens the main settings window
+- **Right-click tray icon**: Shows context menu with options:
+  - "Show Window" - Open the main interface
+  - "Quit" - Exit the application
+
+### Main Application Window
+
+#### Quick Start Guide
+The top section shows your current shortcut and provides a clear 4-step workflow:
+1. Select the text you want to enhance
+2. Copy it to clipboard (`Cmd+C` / `Ctrl+C`)
+3. Press the global shortcut (`Cmd+Shift+E` / `Ctrl+Shift+E`)
+4. Paste the enhanced text (`Cmd+V` / `Ctrl+V`)
+
+#### Status Overview
+Real-time status indicators for:
+- **Ollama Connection**: Shows if Ollama is running and accessible
+- **Autostart Status**: Indicates if the app starts automatically with your system
+- **Model Status**: Shows which AI model is currently selected and available
+
+#### Settings Panel
+
+##### AI Model Selection
+- **Dropdown menu**: Choose from available Ollama models
+- **Auto-detection**: App automatically detects and lists available models
+- **Dynamic loading**: Models are loaded on startup and can be refreshed
+- **Fallback handling**: Graceful handling when no models are available
+
+##### System Prompt Customization
+- **Textarea editor**: Modify how the AI enhances your text
+- **Default prompt visible**: See the original system prompt as a starting point
+- **Real-time saving**: Changes are saved automatically as you type
+- **Reset to Default**: One-click restoration of the original prompt
+- **Persistent storage**: Custom prompts are saved between sessions
+
+**Example customizations:**
+- **More formal tone**: "You are a professional business consultant..."
+- **Creative writing**: "You are a creative writing assistant..."
+- **Technical focus**: "You are a software development expert..."
+- **Educational style**: "You are a patient teacher explaining concepts..."
+
+##### Autostart Configuration
+Platform-specific instructions for enabling/disabling autostart:
+
+**macOS:**
+- System Preferences → Users & Groups → Login Items
+- Add/remove Clip Prompt from the list
+
+**Windows:**
+- Task Manager → Startup tab
+- Enable/disable Clip Prompt
+
+**Linux:**
+- Desktop environment settings → Startup Applications
+- Add/remove Clip Prompt
+
+#### Manual Enhancement
+For testing and direct enhancement:
+- **Input field**: Type or paste text directly
+- **Enhance button**: Process the text immediately
+- **Output display**: See the enhanced result
+- **Copy button**: Copy enhanced text to clipboard
+- **Clear button**: Reset both input and output fields
+
+### Notifications
+The app provides helpful feedback through system notifications:
 - 🤖 "Enhancing your text..." when processing starts
 - ✅ "Text enhanced! Press Cmd+V to paste" when complete
-- 📋 "Please select some text and press Cmd+C first" if clipboard is empty
-- ❌ Error notifications if something goes wrong
+- 📋 "Please copy text (Cmd+C), then try again" if clipboard is empty
+- ❌ Error notifications with specific guidance if something goes wrong
+- 🚫 "Ollama Not Installed" with installation instructions if needed
 
-## Prerequisites
+## 🔧 Configuration
 
-### Ollama Setup
-1. **Install Ollama**: Download from [ollama.ai](https://ollama.ai)
-2. **Install a model**: Run `ollama pull mistral:7b` (or any preferred model)
-3. **Start Ollama**: Run `ollama serve` or ensure it's running as a service
+### Model Management
+- **Automatic detection**: App finds available models on startup
+- **Dynamic selection**: Change models without restarting
+- **Fallback handling**: Uses first available model if preferred isn't found
+- **Error recovery**: Clear error messages when models are unavailable
 
-### Development Prerequisites
+### System Prompt Customization
+The system prompt controls how the AI enhances your text. You can:
+- **View the default**: See exactly how the original prompt works
+- **Modify behavior**: Change the AI's tone, style, or focus
+- **Add examples**: Include specific examples for your use case
+- **Language support**: Create prompts in different languages
+- **Reset anytime**: Return to the default prompt with one click
+
+### Autostart Setup
+Configure the app to start automatically with your system:
+- **Platform-specific instructions**: Clear guidance for each OS
+- **Easy enable/disable**: Simple toggle in the settings
+- **Background operation**: Runs silently in the tray
+
+## 🛠️ Troubleshooting
+
+### Common Issues
+
+#### "Ollama Not Installed" Warning
+**Solution**: Install Ollama following the built-in instructions
+1. Click "Show Instructions" in the warning
+2. Follow the platform-specific installation steps
+3. Install a model: `ollama pull mistral:7b`
+4. Restart Clip Prompt
+
+#### "Failed to connect to Ollama"
+**Solutions**:
+- Ensure Ollama is running: `ollama serve`
+- Check if models are available: `ollama list`
+- Verify Ollama is accessible at `http://localhost:11434`
+- Restart Ollama if it becomes unresponsive
+
+#### "No models available"
+**Solutions**:
+- Install a model: `ollama pull mistral:7b`
+- Check Ollama is running: `ollama serve`
+- Verify model installation: `ollama list`
+
+#### "Hotkey not working"
+**Solutions**:
+- Check if another app is using the same hotkey
+- Try restarting the application
+- On macOS, ensure accessibility permissions are granted
+- Verify the app is running (check system tray)
+
+#### "Enhancement takes too long"
+**Solutions**:
+- Try a smaller/faster model: `ollama pull qwen2.5:0.5b`
+- Check system resources (CPU, memory)
+- Restart Ollama if it becomes unresponsive
+- Consider upgrading your hardware
+
+#### "No text in clipboard"
+**Solutions**:
+- Make sure you copy text before pressing the hotkey
+- The app only works with text content (not images or files)
+- Try copying the text again and then pressing the hotkey
+
+### Performance Tips
+- **Use smaller models** for faster processing (qwen2.5:0.5b, gemma:2b)
+- **Close unused applications** to free up system resources
+- **Restart Ollama periodically** if it becomes slow
+- **Use SSD storage** for better model loading performance
+
+## 🏗️ Development
+
+### Prerequisites
 - **Rust**: Install from [rustup.rs](https://rustup.rs)
 - **Node.js**: Version 18+ from [nodejs.org](https://nodejs.org)
 - **Tauri CLI**: Install with `npm install -g @tauri-apps/cli`
 
-## Installation
-
-### Option 1: Download Pre-built Release (Recommended)
-1. Download the latest release for your platform:
-   - **macOS**: Download the `.dmg` file
-   - **Windows**: Download the `.msi` installer  
-   - **Linux**: Download the `.AppImage` file
-
-2. **macOS Installation**:
-   - Open the `.dmg` file
-   - Drag "Clip Prompt" to your Applications folder
-   - Launch from Applications or Spotlight
-
-3. **Windows Installation**:
-   - Run the `.msi` installer
-   - Follow the installation wizard
-   - Launch from Start Menu or Desktop shortcut
-
-4. **Linux Installation**:
-   - Make the `.AppImage` executable: `chmod +x ClipPrompt.AppImage`
-   - Run directly: `./ClipPrompt.AppImage`
-
-### Option 2: Build from Source
-
+### Building from Source
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -69,112 +247,47 @@ cd clip-prompt
 # Install dependencies
 npm install
 
+# Development mode
+npm run tauri dev
+
 # Build for production
 npm run tauri build
 ```
 
-**Build artifacts will be created in**:
-- **macOS**: `src-tauri/target/release/bundle/dmg/` (DMG installer) and `src-tauri/target/release/bundle/macos/` (App bundle)
-- **Windows**: `src-tauri/target/release/bundle/msi/` (MSI installer)
-- **Linux**: `src-tauri/target/release/bundle/appimage/` (AppImage)
+### Architecture
+- **Backend**: Rust with Tauri framework
+- **Frontend**: HTML, CSS, JavaScript
+- **AI Integration**: HTTP communication with Ollama API
+- **System Integration**: Global hotkeys, clipboard, notifications, tray
 
-## Usage
+## 📦 Distribution
 
-### First Launch
-1. **Start the app** - it will appear in your system tray
-2. **Check Ollama connection** - the app will test connectivity on startup
-3. **Configure settings** (optional) - click the tray icon to open settings
+### Build Artifacts
+- **macOS**: DMG installer and App bundle
+- **Windows**: MSI installer
+- **Linux**: AppImage (portable)
 
-### Daily Usage
-1. **Select text** in any application (web browser, text editor, chat app, etc.)
-2. **Copy it** with `Cmd+C` / `Ctrl+C`
-3. **Press the hotkey** `Cmd+Shift+E` / `Ctrl+Shift+E`
-4. **Wait for notification** - you'll see "Enhancing your text..."
-5. **Paste enhanced text** with `Cmd+V` / `Ctrl+V` when you see "Text enhanced!"
+### System Requirements
+- **macOS**: 10.13+ (High Sierra)
+- **Windows**: Windows 10+
+- **Linux**: Most modern distributions
+- **RAM**: 4GB+ (8GB+ recommended for larger models)
+- **Storage**: 2GB+ free space for models
 
-### System Tray
-- **Left-click** the tray icon to show/hide the main window
-- **Right-click** for context menu with options:
-  - "Show Window" - Open the main interface
-  - "Quit" - Exit the application
+## 📄 License
 
-## Keyboard Shortcuts
+MIT License - see [LICENSE](LICENSE) for details.
 
-### Global (System-wide)
-- `Cmd+Shift+E` / `Ctrl+Shift+E` - **Enhance clipboard text**
-
-### Application Window
-- `Ctrl+Enter` - Enhance the text in the input field
-- `Ctrl+Shift+C` - Copy enhanced text to clipboard
-- `Escape` - Clear input and output fields
-
-## Distribution & Packaging
-
-### Build Information
-- **Binary Size**: ~15MB (release build)
-- **DMG Package Size**: ~5.2MB (compressed)
-- **Minimum macOS**: 10.13 (High Sierra)
-- **Bundle Identifier**: `com.clip-prompt.app`
-
-### Installation Locations
-- **macOS**: `/Applications/Clip Prompt.app`
-- **Windows**: `C:\Program Files\Clip Prompt\`
-- **Linux**: User-defined location (portable AppImage)
-
-### Supported Platforms
-- macOS (Apple Silicon & Intel)
-- Windows (x64)
-- Linux (x64, AppImage format)
-
-## Architecture
-
-### Backend (Rust/Tauri)
-- **Global Hotkey Management**: Cross-platform hotkey registration
-- **Clipboard Operations**: Read/write system clipboard
-- **HTTP Client**: Communication with Ollama API
-- **System Tray**: Background operation with minimal UI
-- **Notifications**: Native system notification display
-
-### Frontend (HTML/CSS/JavaScript)
-- **Settings Interface**: Model selection and configuration
-- **Manual Enhancement**: Direct text input/output for testing
-- **Status Display**: Connection status and operation feedback
-
-### External Dependencies
-- **Ollama**: Local AI model server (user-installed)
-- **AI Models**: Any Ollama-compatible model (mistral:7b recommended)
-
-## Troubleshooting
-
-### Common Issues
-
-**"Failed to connect to Ollama"**
-- Ensure Ollama is installed and running: `ollama serve`
-- Check if models are available: `ollama list`
-- Verify Ollama is accessible at `http://localhost:11434`
-
-**"Hotkey not working"**
-- Check if another app is using the same hotkey
-- Try restarting the application
-- On macOS, ensure accessibility permissions are granted
-
-**"No text in clipboard"**
-- Make sure you copy text before pressing the hotkey
-- The app only works with text content (not images or files)
-
-**"Enhancement takes too long"**
-- Try a smaller/faster model like `qwen2.5:0.5b`
-- Check if your system has sufficient resources
-- Restart Ollama if it becomes unresponsive
-
-### Logs & Debugging
-- **Development**: Run with `npm run dev` to see console output
-- **Production**: Check system logs or run from terminal to see output
-
-## Development
+## 🤝 Contributing
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development setup and contribution guidelines.
 
-## License
+## 🆘 Support
 
-MIT License - see [LICENSE](LICENSE) for details.
+- **Issues**: Report bugs and request features on GitHub
+- **Discussions**: Ask questions and share tips in GitHub Discussions
+- **Documentation**: Check the built-in help and this README
+
+---
+
+**Clip Prompt** - Enhance your text with local AI power! 🚀
