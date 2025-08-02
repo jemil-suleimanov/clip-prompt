@@ -28,12 +28,15 @@
     "active": true,
     "targets": [
       "deb",
-      "rpm"
+      "rpm",
+      "msi",
+      "dmg"
     ],
     "icon": [
       "icons/icon.icns",
       "icons/icon.ico",
-      "icons/icon.png"
+      "icons/icon.png",
+      "icons/Square150x150Logo.png"
     ]
   }
 }
