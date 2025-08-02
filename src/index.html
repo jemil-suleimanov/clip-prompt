@@ -10,234 +10,426 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <style type="text/tailwindcss">
         :root {
-            --primary-color: #0c7ff2;
-            --background-color: #121212;
-            --surface-color: #1E1E1E;
-            --text-primary: #E0E0E0;
-            --text-secondary: #A0A0A0;
-            --accent-color: #333333;
+            --primary-color: #3b82f6;
+            --secondary-color: #e879f9;
+            --background-color: #0f172a;
+            --surface-color: #1e293b;
+            --card-color: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-color: #475569;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
         }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
         .button_primary {
-            @apply bg-[var(--primary-color)] text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors;
+            @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
         }
+        
         .button_secondary {
-            @apply bg-[var(--accent-color)] text-[var(--text-primary)] py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors;
+            @apply bg-gray-700 text-white py-3 px-6 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-all duration-200 font-semibold border border-gray-600 hover:border-gray-500;
         }
+        
         .input {
-            @apply bg-[var(--accent-color)] text-[var(--text-primary)] border border-gray-600 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] focus:border-[var(--primary-color)] transition-colors;
+            @apply bg-gray-800 text-white border border-gray-600 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-400;
         }
+        
         .card {
-            @apply bg-[var(--surface-color)] rounded-lg p-6 shadow-lg;
+            @apply bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 shadow-xl hover:border-gray-600 transition-all duration-300;
         }
+        
         .typography_h1 {
-            @apply text-3xl font-bold text-[var(--text-primary)] mb-4;
+            @apply text-3xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent;
         }
+        
         .typography_h2 {
-            @apply text-xl font-semibold text-[var(--text-primary)] mb-3;
+            @apply text-xl font-semibold text-white mb-4;
         }
+        
         .typography_body {
-            @apply text-[var(--text-secondary)];
+            @apply text-gray-300;
         }
+        
         .status-dot {
-            @apply w-3 h-3 rounded-full;
+            @apply w-3 h-3 rounded-full shadow-lg;
         }
+        
         .status-connected {
-            @apply bg-green-500;
+            @apply bg-green-500 shadow-green-500/50;
         }
+        
         .status-disconnected {
-            @apply bg-red-500;
+            @apply bg-red-500 shadow-red-500/50;
         }
+        
         .status-connecting {
-            @apply bg-yellow-500 animate-pulse;
+            @apply bg-yellow-500 animate-pulse shadow-yellow-500/50;
         }
+        
         .status-neutral {
-            @apply bg-gray-500;
+            @apply bg-gray-500 shadow-gray-500/50;
         }
+        
         .shortcut-key {
-            @apply px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md;
+            @apply px-3 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-md shadow-sm;
         }
+        
         .status-item {
-            @apply flex items-center justify-between py-3 px-4 bg-[var(--accent-color)] rounded-md;
+            @apply flex items-center justify-between py-4 px-5 bg-gray-700/50 rounded-lg border border-gray-600/50 hover:border-gray-500/50 transition-all duration-200;
+        }
+
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .gradient-border {
+            background: linear-gradient(135deg, #3b82f6, #e879f9);
+            padding: 1px;
+            border-radius: 0.75rem;
+        }
+
+        .gradient-border-inner {
+            background: #1e293b;
+            border-radius: 0.6875rem;
+        }
+
+        .workflow-step {
+            @apply relative;
+        }
+
+        .workflow-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -1rem;
+            width: 2rem;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #e879f9);
+            transform: translateY(-50%);
+        }
+
+        .workflow-step:last-child::after {
+            display: none;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .code-block {
+            @apply bg-gray-900 border border-gray-700 rounded-lg p-4 font-mono text-sm text-green-400 relative overflow-x-auto;
+        }
+
+        .warning-card {
+            @apply bg-red-900/20 border border-red-500/30 rounded-xl p-6;
+        }
+
+        .info-card {
+            @apply bg-blue-900/20 border border-blue-500/30 rounded-xl p-4;
+        }
+
+        .success-card {
+            @apply bg-green-900/20 border border-green-500/30 rounded-xl p-4;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
         }
     </style>
 </head>
 <body class="bg-[var(--background-color)] text-[var(--text-primary)] font-sans">
     <div class="flex flex-col min-h-screen">
-        <header class="bg-[var(--surface-color)] shadow-md">
-            <div class="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <img src="./assets/app-icon.png" alt="Clip Prompt" class="h-8 w-8">
-                    <h1 class="text-xl font-bold">Clip Prompt</h1>
+        <!-- Enhanced Header -->
+        <header class="bg-gray-900/95 backdrop-blur-md border-b border-gray-800 shadow-2xl">
+            <div class="max-w-6xl mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <span class="text-white font-bold text-lg">CP</span>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                                Clip Prompt
+                            </h1>
+                            <p class="text-sm text-gray-400">Settings & Configuration</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 text-sm text-gray-400">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span>Application Running</span>
+                    </div>
                 </div>
             </div>
         </header>
         
         <main class="flex-grow">
-            <div class="max-w-2xl mx-auto p-6 space-y-6">
-                <!-- Quick Start Guide -->
-                <div class="card">
-                    <h2 class="typography_h2 flex items-center gap-2">
-                        <span>🚀</span>
-                        Quick Start
-                    </h2>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[var(--text-secondary)]">Global Shortcut:</span>
-                            <div class="flex items-center gap-1">
+            <div class="max-w-4xl mx-auto p-6 space-y-8">
+                <!-- Enhanced Quick Start Guide -->
+                <div class="card glow-effect">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-xl flex items-center justify-center">
+                            <span class="text-2xl">🚀</span>
+                        </div>
+                        <div>
+                            <h2 class="typography_h2 mb-0">Quick Start Guide</h2>
+                            <p class="text-gray-400 text-sm">Get started with Clip Prompt in seconds</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg border border-gray-600/50">
+                            <span class="text-gray-300 font-medium">Global Shortcut:</span>
+                            <div class="flex items-center gap-2">
                                 <kbd class="shortcut-key">Cmd</kbd>
-                                <span class="text-[var(--text-secondary)]">+</span>
+                                <span class="text-gray-400">+</span>
                                 <kbd class="shortcut-key">Shift</kbd>
-                                <span class="text-[var(--text-secondary)]">+</span>
+                                <span class="text-gray-400">+</span>
                                 <kbd class="shortcut-key">E</kbd>
                             </div>
                         </div>
                         
-                        <div class="bg-[var(--accent-color)] rounded-md p-4">
-                            <h4 class="font-medium text-[var(--text-primary)] mb-3">Workflow:</h4>
-                            <div class="space-y-2 text-sm text-[var(--text-secondary)]">
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-[var(--primary-color)] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</span>
-                                    <span>Select the text you want to enhance</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-[var(--primary-color)] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</span>
-                                    <span>Copy it to clipboard (<kbd class="shortcut-key">Cmd</kbd> + <kbd class="shortcut-key">C</kbd>)</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-[var(--primary-color)] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</span>
-                                    <span>Press the global shortcut (<kbd class="shortcut-key">Cmd</kbd> + <kbd class="shortcut-key">Shift</kbd> + <kbd class="shortcut-key">E</kbd>)</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-[var(--primary-color)] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">4</span>
-                                    <span>Paste the enhanced text (<kbd class="shortcut-key">Cmd</kbd> + <kbd class="shortcut-key">V</kbd>)</span>
+                        <div class="gradient-border">
+                            <div class="gradient-border-inner p-6">
+                                <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                                    <span class="text-blue-400">⚡</span>
+                                    Workflow Steps
+                                </h4>
+                                <div class="grid md:grid-cols-4 gap-4">
+                                    <div class="workflow-step text-center">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3 shadow-lg">1</div>
+                                        <h5 class="font-medium text-white mb-2">Select Text</h5>
+                                        <p class="text-sm text-gray-400">Highlight any text in any application</p>
+                                    </div>
+                                    <div class="workflow-step text-center">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3 shadow-lg">2</div>
+                                        <h5 class="font-medium text-white mb-2">Copy Text</h5>
+                                        <p class="text-sm text-gray-400">Use <kbd class="shortcut-key text-xs">Cmd+C</kbd> to copy</p>
+                                    </div>
+                                    <div class="workflow-step text-center">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3 shadow-lg">3</div>
+                                        <h5 class="font-medium text-white mb-2">Trigger AI</h5>
+                                        <p class="text-sm text-gray-400">Press <kbd class="shortcut-key text-xs">Cmd+Shift+E</kbd></p>
+                                    </div>
+                                    <div class="workflow-step text-center">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-lg font-bold mx-auto mb-3 shadow-lg">4</div>
+                                        <h5 class="font-medium text-white mb-2">Paste Result</h5>
+                                        <p class="text-sm text-gray-400">Use <kbd class="shortcut-key text-xs">Cmd+V</kbd> to paste</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Status Overview -->
+                <!-- Enhanced Status Overview -->
                 <div class="card">
-                    <h2 class="typography_h2 flex items-center gap-2">
-                        <span>📊</span>
-                        Status Overview
-                    </h2>
-                    <div class="space-y-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center">
+                            <span class="text-2xl">📊</span>
+                        </div>
+                        <div>
+                            <h2 class="typography_h2 mb-0">System Status</h2>
+                            <p class="text-gray-400 text-sm">Monitor your Clip Prompt configuration</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid gap-4">
                         <!-- Ollama Connection Status -->
                         <div class="status-item">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[var(--text-secondary)]">🤖</span>
-                                <span>Ollama Connection</span>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+                                    <span class="text-xl">🤖</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-white">Ollama Connection</span>
+                                    <p class="text-xs text-gray-400">Local AI processing engine</p>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
                                 <div id="ollamaStatusDot" class="status-dot status-connecting"></div>
-                                <span id="ollamaStatusText" class="text-sm text-yellow-400">Connecting...</span>
+                                <span id="ollamaStatusText" class="text-sm text-yellow-400 font-medium">Connecting...</span>
                             </div>
                         </div>
 
                         <!-- Autostart Status -->
                         <div class="status-item">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[var(--text-secondary)]">🔄</span>
-                                <span>Autostart on Login</span>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
+                                    <span class="text-xl">🔄</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-white">Autostart on Login</span>
+                                    <p class="text-xs text-gray-400">Launch automatically with system</p>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
                                 <div id="autostartStatusDot" class="status-dot status-neutral"></div>
-                                <span id="autostartStatusText" class="text-sm text-[var(--text-secondary)]">Checking...</span>
+                                <span id="autostartStatusText" class="text-sm text-gray-400 font-medium">Checking...</span>
                             </div>
                         </div>
 
                         <!-- Model Status -->
                         <div class="status-item">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[var(--text-secondary)]">🧠</span>
-                                <span>Active Model</span>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center">
+                                    <span class="text-xl">🧠</span>
+                                </div>
+                                <div>
+                                    <span class="font-medium text-white">Active AI Model</span>
+                                    <p class="text-xs text-gray-400">Currently selected model</p>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-3">
                                 <div id="modelStatusDot" class="status-dot status-neutral"></div>
-                                <span id="modelStatusText" class="text-sm text-[var(--text-secondary)]">Loading...</span>
+                                <span id="modelStatusText" class="text-sm text-gray-400 font-medium">Loading...</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Configuration -->
-                <div class="card space-y-6">
-                    <h3 class="typography_h2 flex items-center gap-2">
-                        <span>⚙️</span>
-                        Configuration
-                    </h3>
+                <!-- Enhanced Configuration -->
+                <div class="card space-y-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-xl flex items-center justify-center">
+                            <span class="text-2xl">⚙️</span>
+                        </div>
+                        <div>
+                            <h3 class="typography_h2 mb-0">Configuration</h3>
+                            <p class="text-gray-400 text-sm">Customize your AI enhancement settings</p>
+                        </div>
+                    </div>
                     
-                    <div class="space-y-4">
-                        <div class="space-y-2">
-                            <label class="font-medium text-[var(--text-primary)] flex items-center gap-2">
-                                <span>🧠</span>
-                                AI Model
-                            </label>
-                            <select class="input w-full" id="modelSelect">
+                    <div class="space-y-8">
+                        <!-- AI Model Selection -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label class="font-semibold text-white flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+                                        <span class="text-sm">🧠</span>
+                                    </div>
+                                    AI Model Selection
+                                </label>
+                            </div>
+                            <select class="input w-full text-lg" id="modelSelect">
                                 <option value="mistral:7b">Mistral 7B</option>
                                 <option value="llama2:latest">Llama 2 Latest</option>
                                 <option value="qwen2.5:7b">Qwen 2.5 7B</option>
                                 <option value="gemma:2b">Gemma 2B</option>
                             </select>
-                            <p class="text-xs text-[var(--text-secondary)]">Choose the AI model for text enhancement</p>
-                            <div id="modelWarning" class="hidden">
-                                <p class="text-xs text-red-400 flex items-center gap-1">
-                                    <span>⚠️</span>
-                                    No models available. Please install models with: <code class="bg-[var(--accent-color)] px-1 rounded">ollama pull model-name</code>
+                            <p class="text-sm text-gray-400">Choose the AI model for text enhancement. Larger models provide better quality but require more resources.</p>
+                            
+                            <!-- Model Warning -->
+                            <div id="modelWarning" class="hidden warning-card">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <span class="text-2xl">⚠️</span>
+                                    <h4 class="font-semibold text-red-400">No Models Available</h4>
+                                </div>
+                                <p class="text-red-300 mb-3">
+                                    No AI models are currently installed. Please install models using Ollama:
                                 </p>
+                                <div class="code-block">
+                                    <code>ollama pull mistral:7b</code>
+                                </div>
                             </div>
                             
+                            <!-- Ollama Not Installed -->
                             <div id="ollamaNotInstalled" class="hidden">
-                                <div class="bg-red-900/20 border border-red-500/30 rounded-md p-4">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="font-medium text-red-400 flex items-center gap-2">
-                                            <span>🚫</span>
+                                <div class="warning-card">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h4 class="font-semibold text-red-400 flex items-center gap-3">
+                                            <span class="text-2xl">🚫</span>
                                             Ollama Not Installed
                                         </h4>
-                                        <button id="toggleInstallInstructions" class="text-red-400 hover:text-red-300 text-sm">
+                                        <button id="toggleInstallInstructions" class="text-red-400 hover:text-red-300 text-sm font-medium transition-colors">
                                             Show Instructions ▼
                                         </button>
                                     </div>
-                                    <p class="text-sm text-red-300 mb-3">
-                                        Clip Prompt requires Ollama to be installed and running. Please install Ollama first.
+                                    <p class="text-red-300 mb-4">
+                                        Clip Prompt requires Ollama to be installed and running for local AI processing.
                                     </p>
-                                    <div id="installInstructions" class="hidden space-y-4">
-                                        <div class="space-y-3">
-                                            <div>
-                                                <h5 class="font-medium text-red-300 mb-2">macOS Installation:</h5>
-                                                <div class="bg-[var(--accent-color)] rounded p-3 text-sm">
-                                                    <p class="mb-2">Install using Homebrew:</p>
-                                                    <code class="bg-black/30 px-2 py-1 rounded block mb-2">brew install ollama</code>
-                                                    <p class="mb-2">Or download from:</p>
-                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline">https://ollama.ai/download</a>
+                                    
+                                    <div id="installInstructions" class="hidden space-y-6">
+                                        <div class="grid md:grid-cols-3 gap-4">
+                                            <!-- macOS Installation -->
+                                            <div class="info-card">
+                                                <h5 class="font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                                                    <span>🍎</span>
+                                                    macOS
+                                                </h5>
+                                                <div class="space-y-3 text-sm">
+                                                    <p class="text-blue-300">Using Homebrew:</p>
+                                                    <div class="code-block">
+                                                        <code>brew install ollama</code>
+                                                    </div>
+                                                    <p class="text-blue-300">Or download from:</p>
+                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline transition-colors">
+                                                        ollama.ai/download
+                                                    </a>
                                                 </div>
                                             </div>
-                                            
-                                            <div>
-                                                <h5 class="font-medium text-red-300 mb-2">Windows Installation:</h5>
-                                                <div class="bg-[var(--accent-color)] rounded p-3 text-sm">
-                                                    <p class="mb-2">Download and install from:</p>
-                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline">https://ollama.ai/download</a>
+
+                                            <!-- Windows Installation -->
+                                            <div class="info-card">
+                                                <h5 class="font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                                                    <span>🪟</span>
+                                                    Windows
+                                                </h5>
+                                                <div class="space-y-3 text-sm">
+                                                    <p class="text-blue-300">Download installer:</p>
+                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline transition-colors">
+                                                        ollama.ai/download
+                                                    </a>
                                                 </div>
                                             </div>
-                                            
-                                            <div>
-                                                <h5 class="font-medium text-red-300 mb-2">Linux Installation:</h5>
-                                                <div class="bg-[var(--accent-color)] rounded p-3 text-sm">
-                                                    <p class="mb-2">Install using curl:</p>
-                                                    <code class="bg-black/30 px-2 py-1 rounded block mb-2">curl -fsSL https://ollama.ai/install.sh | sh</code>
-                                                    <p class="mb-2">Or download from:</p>
-                                                    <a href="https://ollama.ai/download" target="_blank" class="text-blue-400 hover:text-blue-300 underline">https://ollama.ai/download</a>
+
+                                            <!-- Linux Installation -->
+                                            <div class="info-card">
+                                                <h5 class="font-semibold text-blue-400 mb-3 flex items-center gap-2">
+                                                    <span>🐧</span>
+                                                    Linux
+                                                </h5>
+                                                <div class="space-y-3 text-sm">
+                                                    <p class="text-blue-300">Using curl:</p>
+                                                    <div class="code-block">
+                                                        <code>curl -fsSL https://ollama.ai/install.sh | sh</code>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <div class="bg-blue-900/20 border border-blue-500/30 rounded p-3">
-                                            <h5 class="font-medium text-blue-300 mb-2">After Installation:</h5>
-                                            <ol class="text-sm text-blue-300 space-y-1 list-decimal list-inside">
-                                                <li>Start Ollama: <code class="bg-black/30 px-1 rounded">ollama serve</code></li>
-                                                <li>Install a model: <code class="bg-black/30 px-1 rounded">ollama pull mistral:7b</code></li>
+                                        <div class="success-card">
+                                            <h5 class="font-semibold text-green-400 mb-3 flex items-center gap-2">
+                                                <span>✅</span>
+                                                After Installation
+                                            </h5>
+                                            <ol class="text-sm text-green-300 space-y-2 list-decimal list-inside">
+                                                <li>Start Ollama: <code class="bg-black/30 px-2 py-1 rounded">ollama serve</code></li>
+                                                <li>Install a model: <code class="bg-black/30 px-2 py-1 rounded">ollama pull mistral:7b</code></li>
                                                 <li>Restart Clip Prompt</li>
                                             </ol>
                                         </div>
@@ -246,79 +438,115 @@
                             </div>
                         </div>
                         
-                        <div class="space-y-2">
+                        <!-- System Prompt Configuration -->
+                        <div class="space-y-4">
                             <div class="flex items-center justify-between">
-                                <label class="font-medium text-[var(--text-primary)] flex items-center gap-2">
-                                    <span>⚙️</span>
+                                <label class="font-semibold text-white flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center">
+                                        <span class="text-sm">💬</span>
+                                    </div>
                                     System Prompt
                                 </label>
-                                <button id="resetSystemPrompt" class="text-xs text-[var(--primary-color)] hover:text-blue-300">
+                                <button id="resetSystemPrompt" class="text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors">
                                     Reset to Default
                                 </button>
                             </div>
-                            <textarea class="input w-full" id="systemPrompt" rows="8" placeholder="Enter your custom system prompt..."></textarea>
-                            <p class="text-xs text-[var(--text-secondary)]">Customize how the AI enhances your text. Leave empty to use default.</p>
+                            <textarea class="input w-full text-sm" id="systemPrompt" rows="6" placeholder="Enter your custom system prompt to define how the AI should enhance your text..."></textarea>
+                            <p class="text-sm text-gray-400">
+                                Customize how the AI enhances your text. This prompt defines the AI's behavior and response style. Leave empty to use the default enhancement prompt.
+                            </p>
                         </div>
                         
-                        <div class="space-y-3">
+                        <!-- Autostart Configuration -->
+                        <div class="space-y-4">
                             <div class="flex items-center gap-3">
-                                <span class="text-[var(--text-secondary)]">🔄</span>
+                                <div class="w-8 h-8 bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
+                                    <span class="text-sm">🔄</span>
+                                </div>
                                 <div>
-                                    <p class="font-medium text-[var(--text-primary)]">Autostart on Login</p>
-                                    <p class="text-xs text-[var(--text-secondary)]">Configure Clip Prompt to start automatically when you log in</p>
+                                    <p class="font-semibold text-white">Autostart Configuration</p>
+                                    <p class="text-sm text-gray-400">Configure Clip Prompt to start automatically when you log in</p>
                                 </div>
                             </div>
                             
-                            <div id="autostartInstructions" class="bg-[var(--accent-color)] rounded-md p-4 space-y-3">
-                                <div id="macosInstructions" class="hidden">
-                                    <h4 class="font-medium text-[var(--text-primary)] mb-2">macOS Instructions:</h4>
-                                    <div class="text-sm text-[var(--text-secondary)] space-y-2">
-                                        <p><strong>To enable autostart:</strong></p>
-                                        <ol class="list-decimal list-inside space-y-1 ml-2">
-                                            <li>Open System Preferences → Users & Groups</li>
-                                            <li>Select your user account</li>
-                                            <li>Click "Login Items" tab</li>
-                                            <li>Click "+" and add ClipPrompt.app</li>
-                                        </ol>
-                                        <p><strong>To disable autostart:</strong></p>
-                                        <ol class="list-decimal list-inside space-y-1 ml-2">
-                                            <li>Open System Preferences → Users & Groups</li>
-                                            <li>Select your user account</li>
-                                            <li>Click "Login Items" tab</li>
-                                            <li>Remove ClipPrompt.app from the list</li>
-                                        </ol>
+                            <div id="autostartInstructions" class="gradient-border">
+                                <div class="gradient-border-inner p-6 space-y-6">
+                                    <!-- macOS Instructions -->
+                                    <div id="macosInstructions" class="hidden">
+                                        <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                                            <span>🍎</span>
+                                            macOS Instructions
+                                        </h4>
+                                        <div class="grid md:grid-cols-2 gap-6">
+                                            <div class="space-y-3">
+                                                <h5 class="font-medium text-green-400">To Enable Autostart:</h5>
+                                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-2">
+                                                    <li>Open System Preferences → Users & Groups</li>
+                                                    <li>Select your user account</li>
+                                                    <li>Click "Login Items" tab</li>
+                                                    <li>Click "+" and add ClipPrompt.app</li>
+                                                </ol>
+                                            </div>
+                                            <div class="space-y-3">
+                                                <h5 class="font-medium text-red-400">To Disable Autostart:</h5>
+                                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-2">
+                                                    <li>Open System Preferences → Users & Groups</li>
+                                                    <li>Select your user account</li>
+                                                    <li>Click "Login Items" tab</li>
+                                                    <li>Remove ClipPrompt.app from the list</li>
+                                                </ol>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                <div id="windowsInstructions" class="hidden">
-                                    <h4 class="font-medium text-[var(--text-primary)] mb-2">Windows Instructions:</h4>
-                                    <div class="text-sm text-[var(--text-secondary)] space-y-2">
-                                        <p><strong>To enable autostart:</strong></p>
-                                        <ol class="list-decimal list-inside space-y-1 ml-2">
-                                            <li>Press Win + R, type "shell:startup" and press Enter</li>
-                                            <li>Create a shortcut to ClipPrompt.exe in this folder</li>
-                                        </ol>
-                                        <p><strong>To disable autostart:</strong></p>
-                                        <ol class="list-decimal list-inside space-y-1 ml-2">
-                                            <li>Press Win + R, type "shell:startup" and press Enter</li>
-                                            <li>Delete the ClipPrompt shortcut from this folder</li>
-                                        </ol>
+                                    
+                                    <!-- Windows Instructions -->
+                                    <div id="windowsInstructions" class="hidden">
+                                        <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                                            <span>🪟</span>
+                                            Windows Instructions
+                                        </h4>
+                                        <div class="grid md:grid-cols-2 gap-6">
+                                            <div class="space-y-3">
+                                                <h5 class="font-medium text-green-400">To Enable Autostart:</h5>
+                                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-2">
+                                                    <li>Press <kbd class="shortcut-key">Win + R</kbd></li>
+                                                    <li>Type "shell:startup" and press Enter</li>
+                                                    <li>Create a shortcut to ClipPrompt.exe in this folder</li>
+                                                </ol>
+                                            </div>
+                                            <div class="space-y-3">
+                                                <h5 class="font-medium text-red-400">To Disable Autostart:</h5>
+                                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-2">
+                                                    <li>Press <kbd class="shortcut-key">Win + R</kbd></li>
+                                                    <li>Type "shell:startup" and press Enter</li>
+                                                    <li>Delete the ClipPrompt shortcut from this folder</li>
+                                                </ol>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                <div id="linuxInstructions" class="hidden">
-                                    <h4 class="font-medium text-[var(--text-primary)] mb-2">Linux Instructions:</h4>
-                                    <div class="text-sm text-[var(--text-secondary)] space-y-2">
-                                        <p><strong>To enable autostart:</strong></p>
-                                        <ol class="list-decimal list-inside space-y-1 ml-2">
-                                            <li>Open your desktop environment's autostart settings</li>
-                                            <li>Add ClipPrompt to the autostart applications list</li>
-                                        </ol>
-                                        <p><strong>To disable autostart:</strong></p>
-                                        <ol class="list-decimal list-inside space-y-1 ml-2">
-                                            <li>Open your desktop environment's autostart settings</li>
-                                            <li>Remove ClipPrompt from the autostart applications list</li>
-                                        </ol>
+                                    
+                                    <!-- Linux Instructions -->
+                                    <div id="linuxInstructions" class="hidden">
+                                        <h4 class="font-semibold text-white mb-4 flex items-center gap-2">
+                                            <span>🐧</span>
+                                            Linux Instructions
+                                        </h4>
+                                        <div class="grid md:grid-cols-2 gap-6">
+                                            <div class="space-y-3">
+                                                <h5 class="font-medium text-green-400">To Enable Autostart:</h5>
+                                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-2">
+                                                    <li>Open your desktop environment's autostart settings</li>
+                                                    <li>Add ClipPrompt to the autostart applications list</li>
+                                                </ol>
+                                            </div>
+                                            <div class="space-y-3">
+                                                <h5 class="font-medium text-red-400">To Disable Autostart:</h5>
+                                                <ol class="list-decimal list-inside space-y-2 text-sm text-gray-300 ml-2">
+                                                    <li>Open your desktop environment's autostart settings</li>
+                                                    <li>Remove ClipPrompt from the autostart applications list</li>
+                                                </ol>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -326,29 +554,49 @@
                     </div>
                 </div>
                 
-                <!-- Manual Test -->
+                <!-- Enhanced Manual Test -->
                 <div class="card space-y-6">
-                    <h3 class="typography_h2 flex items-center gap-2">
-                        <span>🧪</span>
-                        Manual Test
-                    </h3>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl flex items-center justify-center">
+                            <span class="text-2xl">🧪</span>
+                        </div>
+                        <div>
+                            <h3 class="typography_h2 mb-0">Test AI Enhancement</h3>
+                            <p class="text-gray-400 text-sm">Try out your AI model and system prompt configuration</p>
+                        </div>
+                    </div>
                     
-                    <div class="space-y-4">
-                        <div class="space-y-2">
-                            <label class="font-medium text-[var(--text-primary)]" for="inputText">Input Text</label>
-                            <textarea class="input w-full" id="inputText" placeholder="Enter text to enhance..." rows="4"></textarea>
+                    <div class="space-y-6">
+                        <div class="space-y-3">
+                            <label class="font-semibold text-white flex items-center gap-2" for="inputText">
+                                <span class="text-blue-400">📝</span>
+                                Input Text
+                            </label>
+                            <textarea class="input w-full text-sm" id="inputText" placeholder="Enter text to enhance (e.g., 'fix grammer and speling in this sentance')..." rows="4"></textarea>
                         </div>
                         
-                        <div class="space-y-2">
-                            <label class="font-medium text-[var(--text-primary)]" for="outputText">Enhanced Text</label>
-                            <textarea class="input w-full" id="outputText" placeholder="Enhanced text will appear here..." readonly="" rows="4"></textarea>
+                        <div class="space-y-3">
+                            <label class="font-semibold text-white flex items-center gap-2" for="outputText">
+                                <span class="text-green-400">✨</span>
+                                Enhanced Text
+                            </label>
+                            <textarea class="input w-full text-sm bg-gray-900 border-green-500/30" id="outputText" placeholder="Enhanced text will appear here..." readonly="" rows="4"></textarea>
                         </div>
                         
-                        <div class="flex justify-between items-center">
-                            <button id="clearBtn" class="button_secondary">Clear</button>
-                            <div class="flex gap-2">
-                                <button id="copyBtn" class="button_secondary">Copy</button>
-                                <button id="enhanceBtn" class="button_primary">Enhance</button>
+                        <div class="flex justify-between items-center pt-4">
+                            <button id="clearBtn" class="button_secondary flex items-center gap-2">
+                                <span>🗑️</span>
+                                Clear
+                            </button>
+                            <div class="flex gap-3">
+                                <button id="copyBtn" class="button_secondary flex items-center gap-2">
+                                    <span>📋</span>
+                                    Copy Result
+                                </button>
+                                <button id="enhanceBtn" class="button_primary flex items-center gap-2">
+                                    <span>✨</span>
+                                    Enhance Text
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -356,13 +604,31 @@
             </div>
         </main>
         
-        <footer class="bg-[var(--surface-color)] mt-8 py-4">
-            <div class="max-w-4xl mx-auto px-6 flex justify-center items-center">
-                <p class="typography_body text-sm text-center">
-                    💡 Tip: Copy text (Cmd+C), then press 
-                    <kbd class="shortcut-key">Cmd</kbd> + <kbd class="shortcut-key">Shift</kbd> + <kbd class="shortcut-key">E</kbd> 
-                    to enhance it
-                </p>
+        <!-- Enhanced Footer -->
+        <footer class="bg-gray-900/95 backdrop-blur-md border-t border-gray-800 mt-12">
+            <div class="max-w-4xl mx-auto px-6 py-6">
+                <div class="text-center">
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <div class="flex items-center gap-2 text-sm text-gray-400">
+                            <span class="text-lg">💡</span>
+                            <span>Pro Tip:</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-gray-300">
+                            <span>Copy text</span>
+                            <kbd class="shortcut-key">Cmd+C</kbd>
+                            <span>then press</span>
+                            <kbd class="shortcut-key">Cmd</kbd>
+                            <span>+</span>
+                            <kbd class="shortcut-key">Shift</kbd>
+                            <span>+</span>
+                            <kbd class="shortcut-key">E</kbd>
+                            <span>to enhance it</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Clip Prompt • Privacy-first AI text enhancement • All processing happens locally
+                    </p>
+                </div>
             </div>
         </footer>
     </div>
