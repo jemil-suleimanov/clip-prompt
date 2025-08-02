@@ -62,7 +62,9 @@ echo -e "${YELLOW}Creating git tag...${NC}"
 git tag "v$NEW_VERSION"
 
 echo -e "${YELLOW}Pushing changes and tag...${NC}"
-git push origin main
+# Get current branch name
+CURRENT_BRANCH=$(git branch --show-current)
+git push origin "$CURRENT_BRANCH"
 git push origin "v$NEW_VERSION"
 
 echo -e "${GREEN}✅ Release process completed!${NC}"
