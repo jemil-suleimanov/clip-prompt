@@ -74,9 +74,12 @@ jobs:
 
       - name: List bundle files
         run: |
-          echo "=== Bundle files ==="
-          find src-tauri/target/release/bundle/ -type f -name "*" | head -20
-          echo "=== End bundle files ==="
+          echo "=== Bundle files for ${{ matrix.platform }} ==="
+          echo "Bundle directory contents:"
+          ls -la src-tauri/target/release/bundle/ || echo "Bundle directory not found"
+          echo "All bundle files:"
+          find src-tauri/target/release/bundle/ -type f -name "*" | head -50
+          echo "=== End bundle files for ${{ matrix.platform }} ==="
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -98,6 +101,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Debug artifacts
+        run: |
+          echo "=== Debugging artifacts ==="
+          echo "Current directory: $(pwd)"
+          echo "Artifacts directory structure:"
+          find artifacts -type f -name "*" | head -50
+          echo "=== End artifacts debug ==="
 
       - name: Clean artifacts
         run: |
