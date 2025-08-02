@@ -96,9 +96,12 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/clip-prompt-macos-latest/**/*
-            artifacts/clip-prompt-ubuntu-latest/**/*
-            artifacts/clip-prompt-windows-latest/**/*
+            artifacts/clip-prompt-macos-latest/**/*.dmg
+            artifacts/clip-prompt-macos-latest/**/*.app.tar.gz
+            artifacts/clip-prompt-ubuntu-latest/**/*.deb
+            artifacts/clip-prompt-ubuntu-latest/**/*.rpm
+            artifacts/clip-prompt-windows-latest/**/*.msi
+            artifacts/clip-prompt-windows-latest/**/*.exe
           generate_release_notes: true
           draft: false
           prerelease: false
