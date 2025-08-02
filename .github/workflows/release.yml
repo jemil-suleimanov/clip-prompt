@@ -71,7 +71,7 @@ jobs:
           PKG_CONFIG_PATH: "/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig"
         run: |
           echo "=== Starting Tauri build for ${{ matrix.platform }} ==="
-          if [ "${{ matrix.platform }}" == "ubuntu-latest" ]; then
+          if [[ "${{ matrix.platform }}" == "ubuntu-latest" ]]; then
             echo "=== Ubuntu-specific checks ==="
             pkg-config --list-all | grep appindicator || echo "No appindicator found"
             pkg-config --exists ayatana-appindicator-0.1 && echo "Ayatana appindicator found" || echo "Ayatana appindicator not found"
@@ -96,15 +96,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: clip-prompt-${{ matrix.platform }}
-          path: |
-            src-tauri/target/release/bundle/**/*.dmg
-            src-tauri/target/release/bundle/**/*.msi
-            src-tauri/target/release/bundle/**/*.exe
-            src-tauri/target/release/bundle/**/*.deb
-            src-tauri/target/release/bundle/**/*.rpm
-            src-tauri/target/release/bundle/**/*.AppImage
-            src-tauri/target/release/bundle/**/*.tar.gz
-          if-no-files-found: error
+          path: src-tauri/target/release/bundle/
 
   create-release:
     name: Create Release
@@ -141,12 +133,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/clip-prompt-macos-latest/**/*.dmg
-            artifacts/clip-prompt-macos-latest/**/*.app.tar.gz
-            artifacts/clip-prompt-ubuntu-latest/**/*.deb
-            artifacts/clip-prompt-ubuntu-latest/**/*.rpm
-            artifacts/clip-prompt-windows-latest/**/*.msi
-            artifacts/clip-prompt-windows-latest/**/*.exe
+            artifacts/clip-prompt-macos-latest/**/*
+            artifacts/clip-prompt-ubuntu-latest/**/*
+            artifacts/clip-prompt-windows-latest/**/*
           generate_release_notes: true
           draft: false
           prerelease: false
