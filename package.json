@@ -1,13 +1,16 @@
 {
   "name": "clip-prompt",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "tauri": "tauri",
     "dev": "tauri dev",
     "build": "tauri build",
-    "preview": "tauri dev --no-watch"
+    "preview": "tauri dev --no-watch",
+    "release:patch": "./scripts/release.sh patch",
+    "release:minor": "./scripts/release.sh minor",
+    "release:major": "./scripts/release.sh major"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"
