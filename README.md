@@ -67,7 +67,26 @@ ollama pull llama2:7b     # Classic option
 ```
 
 ### 3. Install Clip Prompt
-Download the latest release for your platform from the releases page and install.
+
+#### Option 1: Download from GitHub Releases
+Download the latest release for your platform from the [GitHub Releases page](https://github.com/jemil-suleimanov/clip-prompt/releases/latest).
+
+**Note for macOS users**: Since we don't have Apple Developer certificates, you may see security warnings when installing. This is normal for unsigned apps. You can still run the app by right-clicking and selecting "Open" or going to System Preferences → Security & Privacy → General and clicking "Open Anyway".
+
+#### Option 2: Build from Source
+```bash
+# Clone the repository
+git clone https://github.com/your-username/clip-prompt.git
+cd clip-prompt
+
+# Install dependencies
+npm install
+
+# Build for your platform
+npm run tauri build
+```
+
+**Note for macOS users**: Since we don't have Apple Developer certificates, you may see security warnings when installing. This is normal for unsigned apps. You can still run the app by right-clicking and selecting "Open" or going to System Preferences → Security & Privacy → General and clicking "Open Anyway".
 
 ### 4. Start Using
 1. **Select text** in any application
@@ -273,6 +292,16 @@ npm run tauri build
 - **Linux**: Most modern distributions
 - **RAM**: 4GB+ (8GB+ recommended for larger models)
 - **Storage**: 2GB+ free space for models
+
+### Releases and Versioning
+We use semantic versioning (MAJOR.MINOR.PATCH) for releases. To create a new release:
+
+1. **Update version** in `package.json` and `src-tauri/tauri.conf.json`
+2. **Create a git tag**: `git tag v1.0.0`
+3. **Push the tag**: `git push origin v1.0.0`
+4. **GitHub Actions** will automatically build and create a release
+
+The workflow builds for all platforms simultaneously and uploads the artifacts to the GitHub release.
 
 ## 📄 License
 
