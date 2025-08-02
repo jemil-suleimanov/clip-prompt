@@ -82,15 +82,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: clip-prompt-${{ matrix.platform }}
-          path: |
-            src-tauri/target/release/bundle/**/*.dmg
-            src-tauri/target/release/bundle/**/*.msi
-            src-tauri/target/release/bundle/**/*.exe
-            src-tauri/target/release/bundle/**/*.deb
-            src-tauri/target/release/bundle/**/*.rpm
-            src-tauri/target/release/bundle/**/*.AppImage
-            src-tauri/target/release/bundle/**/*.tar.gz
-          if-no-files-found: warn
+          path: src-tauri/target/release/bundle/
+          if-no-files-found: error
 
   create-release:
     name: Create Release
@@ -105,6 +98,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Clean artifacts
+        run: |
+          echo "=== Cleaning artifacts ==="
+          find artifacts -name "control.tar.gz" -delete
+          find artifacts -name "data.tar.gz" -delete
+          find artifacts -name "debian-binary" -delete
+          find artifacts -name "*.so" -delete
+          echo "=== Cleaned artifacts ==="
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
